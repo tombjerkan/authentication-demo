@@ -40,7 +40,7 @@ function App() {
           <p className="mt-2 text-center text-sm text-gray-600">
             Or{" "}
             <a
-              href="#"
+              href="/register"
               className="font-medium text-indigo-600 hover:text-indigo-500"
             >
               create an account
@@ -101,7 +101,7 @@ function App() {
           <div className="flex items-center justify-end">
             <div className="text-sm">
               <a
-                href="#"
+                href="/forgotpassword"
                 className="font-medium text-indigo-600 hover:text-indigo-500"
               >
                 Forgot your password?
