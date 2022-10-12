@@ -1,4 +1,4 @@
-export async function login(
+export async function loginMock(
   email: string,
   password: string
 ): Promise<
