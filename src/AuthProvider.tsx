@@ -77,6 +77,21 @@ export function useLogin(): [
   return [login, isInProgress, isError];
 }
 
+export function useLogout() {
+  const context = useContext(AuthContext);
+
+  if (context === undefined) {
+    throw new Error("useLogout must be used within an AuthProvider");
+  }
+
+  function logout() {
+    assert(context !== undefined);
+    context.logout();
+  }
+
+  return logout;
+}
+
 export function useRequireAuth() {
   const context = useContext(AuthContext);
   const location = useLocation();
