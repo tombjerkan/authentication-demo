@@ -66,7 +66,7 @@ export function useLogin(): [
 
     if (result.isSuccess) {
       assert(context !== undefined);
-      context!.login(result);
+      context.login(result);
       navigate(redirect, { replace: true });
     } else {
       setIsInProgress(false);
