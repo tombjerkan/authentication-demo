@@ -41,6 +41,16 @@ export async function registerMock(
   );
 }
 
+export async function sendForgotPasswordEmailMock(
+  email: string
+): Promise<boolean> {
+  const users = readUsersFromStorage();
+  const isEmailRegistered = users.some((u) => u.email === email);
+  return new Promise((resolve) =>
+    setTimeout(() => resolve(isEmailRegistered), 2000)
+  );
+}
+
 function readUsersFromStorage() {
   const usersJsonString = localStorage.getItem("users");
   const users: { email: string; password: string; fullName: string }[] =
