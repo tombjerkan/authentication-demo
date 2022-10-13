@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { HTMLAttributes, HTMLProps, PropsWithoutRef, useState } from "react";
+import { useState } from "react";
 import styles from "./App.module.css";
 import { registerMock } from "./backendmock";
 import { Input, Label, Spinner } from "./components";
