@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./AuthProvider";
 import SignInPage from "./SignInPage";
 import UserPage from "./UserPage";
@@ -9,6 +9,7 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<SignInPage />} />
+          <Route path="/" element={<Navigate to="/user" replace />} />
           <Route path="/user" element={<UserPage />} />
           <Route path="*" element={<h1>Page not found</h1>} />
         </Routes>
