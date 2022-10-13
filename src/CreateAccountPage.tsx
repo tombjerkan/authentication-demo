@@ -7,7 +7,7 @@ import { Input, Label, Spinner } from "./components";
 type State = "initial" | "in-progress" | "success" | "error";
 
 export default function CreateAccountPage() {
-  const [state, setState] = useState("initial");
+  const [state, setState] = useState<State>("initial");
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
