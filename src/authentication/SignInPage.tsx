@@ -7,7 +7,7 @@ import {
   Label,
   PageContainer,
   Spinner,
-} from "./components";
+} from "../common/components";
 
 export default function SignInPage() {
   const [login, isLoginInProgress, isLoginError] = useLogin();
