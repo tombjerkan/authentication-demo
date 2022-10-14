@@ -1,9 +1,9 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { AuthProvider } from "./AuthProvider";
-import CreateAccountPage from "./CreateAccountPage";
-import ForgotPasswordPage from "./ForgotPasswordPage";
-import SignInPage from "./SignInPage";
-import UserPage from "./UserPage";
+import { AuthProvider } from "./authentication/AuthProvider";
+import CreateAccountPage from "./authentication/CreateAccountPage";
+import ForgotPasswordPage from "./authentication/ForgotPasswordPage";
+import SignInPage from "./authentication/SignInPage";
+import UserPage from "./user-profile/UserPage";
 
 function App() {
   return (

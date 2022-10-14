@@ -8,7 +8,7 @@ import {
   Label,
   PageContainer,
   Spinner,
-} from "./components";
+} from "../components";
 
 type State = "initial" | "in-progress" | "success" | "error";
 
