@@ -11,7 +11,6 @@ import { confirmAccount } from "./identity";
 export default function CreateAccountPage() {
   const location = useLocation();
   const { token } = location.state;
-  console.log(location);
   const [state, setState] = useState<"in-progress" | "success" | "error">(
     "in-progress"
   );
