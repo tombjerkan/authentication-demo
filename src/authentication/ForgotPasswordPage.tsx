@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { sendForgotPasswordEmailMock } from "./backendmock";
+import { requestPasswordRecovery } from "../authentication/identity";
 import {
   Button,
   Card,
@@ -18,8 +18,10 @@ export default function CreateAccountPage() {
 
   async function submit() {
     setState("in-progress");
-    const isSuccess = await sendForgotPasswordEmailMock(email);
-    setState(isSuccess ? "success" : "error");
+
+    requestPasswordRecovery(email)
+      .then(() => setState("success"))
+      .catch(() => setState("error"));
   }
 
   return (
@@ -74,7 +76,11 @@ export default function CreateAccountPage() {
             <Button
               type="submit"
               disabled={state === "in-progress" || state === "success"}
-              icon={state === "in-progress" ? <Spinner /> : undefined}
+              icon={
+                state === "in-progress" ? (
+                  <Spinner className="text-white" />
+                ) : undefined
+              }
             >
               {state === "success"
                 ? "Password reset email sent"

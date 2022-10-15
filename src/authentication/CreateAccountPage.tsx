@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { registerMock } from "./backendmock";
+import { signup } from "./identity";
 import {
   Button,
   Card,
@@ -21,8 +21,10 @@ export default function CreateAccountPage() {
 
   async function submit() {
     setState("in-progress");
-    const isSuccess = await registerMock(fullName, email, password);
-    setState(isSuccess ? "success" : "error");
+
+    await signup(fullName, email, password)
+      .then(() => setState("success"))
+      .catch(() => setState("error"));
   }
 
   return (
@@ -106,7 +108,11 @@ export default function CreateAccountPage() {
               <Button
                 type="submit"
                 disabled={state === "in-progress"}
-                icon={state === "in-progress" ? <Spinner /> : undefined}
+                icon={
+                  state === "in-progress" ? (
+                    <Spinner className="text-white" />
+                  ) : undefined
+                }
               >
                 {state === "in-progress"
                   ? "Creating account"

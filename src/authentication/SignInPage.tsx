@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLogin } from "./AuthProvider";
+import { useLogin } from "./identity";
 import {
   Button,
   CompanyLogo,
@@ -95,7 +95,11 @@ export default function SignInPage() {
             <Button
               type="submit"
               disabled={isLoginInProgress}
-              icon={isLoginInProgress ? <Spinner /> : undefined}
+              icon={
+                isLoginInProgress ? (
+                  <Spinner className="text-white" />
+                ) : undefined
+              }
             >
               {isLoginInProgress ? "Signing in" : "Sign in"}
             </Button>
