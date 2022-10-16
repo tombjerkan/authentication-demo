@@ -8,6 +8,7 @@ import {
 import ConfirmAccountPage from "./authentication/ConfirmAccountPage";
 import CreateAccountPage from "./authentication/CreateAccountPage";
 import ForgotPasswordPage from "./authentication/ForgotPasswordPage";
+import RecoverPasswordPage from "./authentication/RecoverPasswordPage";
 import SignInPage from "./authentication/SignInPage";
 import UserPage from "./user-profile/UserPage";
 
@@ -30,6 +31,10 @@ export default function Routes() {
       element: <ForgotPasswordPage />,
     },
     {
+      path: "recoverpassword",
+      element: <RecoverPasswordPage />,
+    },
+    {
       path: "/",
       element: <Navigate to="/user" replace />,
     },
@@ -44,6 +49,7 @@ export default function Routes() {
   ]);
 
   useRedirectToConfirmAccount();
+  useRedirectToRecoverPassword();
 
   return pageElement;
 }
@@ -59,6 +65,24 @@ const useRedirectToConfirmAccount = () => {
     if (confirmationToken) {
       navigate("/confirmaccount", {
         state: { token: confirmationToken },
+        replace: true,
+      });
+    }
+  }, [location, navigate]);
+};
+
+const useRedirectToRecoverPassword = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const isIndexPage = location.pathname === "/";
+    const searchParams = new URLSearchParams(location.hash.substring(1));
+    const recoveryToken = searchParams.get("recovery_token");
+
+    if (isIndexPage && recoveryToken) {
+      navigate(`/recoverpassword#recovery_token=${recoveryToken}`, {
+        state: { token: recoveryToken },
         replace: true,
       });
     }

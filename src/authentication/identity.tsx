@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import assert from "../common/assert";
 
 const client = new GoTrue({
   APIUrl: "https://bjerkandemo.netlify.app/.netlify/identity",
@@ -21,6 +22,11 @@ export const confirmAccount = (token: string) => client.confirm(token);
 
 export const requestPasswordRecovery = (email: string) =>
   client.requestPasswordRecovery(email);
+
+export async function recoverPassword(token: string, newPassword: string) {
+  const user = await client.recover(token);
+  await user.update({ password: newPassword }).finally(() => user.logout());
+}
 
 interface User {
   email: string;
@@ -134,11 +140,3 @@ export function useRequireAuth() {
     }
   }, [location, navigate, user]);
 }
-
-function assert(condition: any, msg?: string): asserts condition {
-  if (!condition) {
-    throw new AssertionError(msg);
-  }
-}
-
-class AssertionError extends Error {}
