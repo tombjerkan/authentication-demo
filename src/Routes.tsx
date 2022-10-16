@@ -82,7 +82,6 @@ const useRedirectToRecoverPassword = () => {
 
     if (isIndexPage && recoveryToken) {
       navigate(`/recoverpassword#recovery_token=${recoveryToken}`, {
-        state: { token: recoveryToken },
         replace: true,
       });
     }
