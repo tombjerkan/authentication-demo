@@ -1,6 +1,5 @@
 import {
   Button,
-  Card,
   CompanyLogo,
   Input,
   Label,
@@ -18,6 +17,7 @@ export default function ChangePasswordPage() {
   const recoveryToken = searchParams.get("recovery_token");
 
   const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
   const [state, setState] = useState<
     "initial" | "in-progress" | "success" | "error"
   >("initial");
@@ -27,6 +27,11 @@ export default function ChangePasswordPage() {
       recoveryToken !== null,
       "recovery token should always be present when shown the recover password page"
     );
+
+    if (password !== repeatPassword) {
+      setState("error");
+      return;
+    }
 
     setState("in-progress");
 
@@ -59,6 +64,20 @@ export default function ChangePasswordPage() {
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
+              disabled={state === "in-progress"}
+              required
+              className="mt-1"
+            />
+
+            <Label htmlFor="email-address" className="mt-4">
+              Repeat password
+            </Label>
+            <Input
+              id="repeat-password"
+              name="repeat-password"
+              type="password"
+              value={repeatPassword}
+              onChange={(event) => setRepeatPassword(event.target.value)}
               disabled={state === "in-progress"}
               required
               className="mt-1"
