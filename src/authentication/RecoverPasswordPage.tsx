@@ -24,6 +24,7 @@ export default function ChangePasswordPage() {
   >("initial");
 
   function submit() {
+    // TODO: this should be handled gracefully rather than by throwing an error
     assert(
       recoveryToken !== null,
       "recovery token should always be present when shown the recover password page"
