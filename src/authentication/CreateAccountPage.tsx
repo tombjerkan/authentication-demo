@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { signup } from "./identity";
+import { useEffect, useState } from "react";
+import { confirmAccount, signup } from "./identity";
 import {
   Button,
   Card,
@@ -9,10 +9,21 @@ import {
   PageContainer,
   Spinner,
 } from "../common/components";
+import { useLocation } from "react-router-dom";
 
 type State = "initial" | "in-progress" | "success" | "error";
 
-export default function CreateAccountPage() {
+export default function RegisterPage() {
+  const confirmationToken = useConfirmationToken();
+
+  return confirmationToken ? (
+    <ConfirmAccountPage confirmationToken={confirmationToken} />
+  ) : (
+    <CreateAccountPage />
+  );
+}
+
+function CreateAccountPage() {
   const [state, setState] = useState<State>("initial");
 
   const [fullName, setFullName] = useState("");
@@ -124,4 +135,68 @@ export default function CreateAccountPage() {
       </Card>
     </PageContainer>
   );
+}
+
+function ConfirmAccountPage(props: { confirmationToken: string }) {
+  const [state, setState] = useState<"in-progress" | "success" | "error">(
+    "in-progress"
+  );
+
+  useEffect(() => {
+    confirmAccount(props.confirmationToken)
+      .then(() => setState("success"))
+      .catch(() => setState("error"));
+  }, [props.confirmationToken]);
+
+  return (
+    <PageContainer>
+      <Card className="max-h-md w-full max-w-lg space-y-8 py-8">
+        {state === "in-progress" && (
+          <div className="flex justify-center text-indigo-600">
+            <Spinner />
+          </div>
+        )}
+
+        {state !== "in-progress" && (
+          <div>
+            <CompanyLogo className="mx-auto h-12 w-auto" />
+
+            {state === "success" && (
+              <>
+                <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+                  Account confirmed
+                </h2>
+                <p className="mt-2 text-center text-sm text-gray-600">
+                  You can now{" "}
+                  <a
+                    href="/login"
+                    className="font-medium text-indigo-600 hover:text-indigo-500"
+                  >
+                    sign in to your account.
+                  </a>
+                </p>
+              </>
+            )}
+
+            {state === "error" && (
+              <>
+                <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+                  Something went wrong
+                </h2>
+                <p className="mt-2 text-center text-sm text-gray-600">
+                  Please try again or contact support if the problem continues.
+                </p>
+              </>
+            )}
+          </div>
+        )}
+      </Card>
+    </PageContainer>
+  );
+}
+
+function useConfirmationToken() {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.hash.substring(1));
+  return searchParams.get("confirmation_token");
 }

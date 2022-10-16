@@ -5,10 +5,8 @@ import {
   useNavigate,
   useRoutes,
 } from "react-router-dom";
-import ConfirmAccountPage from "./authentication/ConfirmAccountPage";
-import CreateAccountPage from "./authentication/CreateAccountPage";
+import RegisterPage from "./authentication/CreateAccountPage";
 import ForgotPasswordPage from "./authentication/ForgotPasswordPage";
-import RecoverPasswordPage from "./authentication/RecoverPasswordPage";
 import SignInPage from "./authentication/SignInPage";
 import UserPage from "./user-profile/UserPage";
 
@@ -20,19 +18,11 @@ export default function Routes() {
     },
     {
       path: "/register",
-      element: <CreateAccountPage />,
-    },
-    {
-      path: "/confirmaccount",
-      element: <ConfirmAccountPage />,
+      element: <RegisterPage />,
     },
     {
       path: "/forgotpassword",
       element: <ForgotPasswordPage />,
-    },
-    {
-      path: "recoverpassword",
-      element: <RecoverPasswordPage />,
     },
     {
       path: "/",
@@ -64,7 +54,7 @@ const useRedirectToConfirmAccount = () => {
     const confirmationToken = searchParams.get("confirmation_token");
 
     if (isIndexPage && confirmationToken) {
-      navigate(`/confirmaccount#confirmation_token=${confirmationToken}`, {
+      navigate(`/register#confirmation_token=${confirmationToken}`, {
         replace: true,
       });
     }
@@ -81,7 +71,7 @@ const useRedirectToRecoverPassword = () => {
     const recoveryToken = searchParams.get("recovery_token");
 
     if (isIndexPage && recoveryToken) {
-      navigate(`/recoverpassword#recovery_token=${recoveryToken}`, {
+      navigate(`/forgotpassword#recovery_token=${recoveryToken}`, {
         replace: true,
       });
     }
