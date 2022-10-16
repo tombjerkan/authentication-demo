@@ -1,5 +1,6 @@
 import {
   Button,
+  Card,
   CompanyLogo,
   Input,
   Label,
@@ -42,7 +43,7 @@ export default function ChangePasswordPage() {
 
   return (
     <PageContainer>
-      <div className="w-full max-w-md space-y-8 overflow-hidden bg-white px-4 py-5 pt-10 shadow sm:rounded-lg sm:px-6">
+      <Card className="w-full max-w-md space-y-8">
         <div>
           <CompanyLogo className="mx-auto h-12 w-auto" />
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
@@ -106,7 +107,7 @@ export default function ChangePasswordPage() {
             </Button>
           </div>
         </form>
-      </div>
+      </Card>
     </PageContainer>
   );
 }
