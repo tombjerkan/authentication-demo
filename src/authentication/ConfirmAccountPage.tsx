@@ -7,19 +7,28 @@ import {
 import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { confirmAccount } from "./identity";
+import assert from "../common/assert";
 
 export default function CreateAccountPage() {
   const location = useLocation();
-  const { token } = location.state;
+  const searchParams = new URLSearchParams(location.hash.substring(1));
+  const confirmationToken = searchParams.get("confirmation_token");
+
   const [state, setState] = useState<"in-progress" | "success" | "error">(
     "in-progress"
   );
 
   useEffect(() => {
-    confirmAccount(token)
+    // TODO: this should be handled gracefully rather than by throwing an error
+    assert(
+      confirmationToken !== null,
+      "confirmation token should always be present when shown the confirm account page"
+    );
+
+    confirmAccount(confirmationToken)
       .then(() => setState("success"))
       .catch(() => setState("error"));
-  }, [token]);
+  }, [confirmationToken]);
 
   return (
     <PageContainer>

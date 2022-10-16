@@ -59,12 +59,12 @@ const useRedirectToConfirmAccount = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const isIndexPage = location.pathname === "/";
     const searchParams = new URLSearchParams(location.hash.substring(1));
     const confirmationToken = searchParams.get("confirmation_token");
 
-    if (confirmationToken) {
-      navigate("/confirmaccount", {
-        state: { token: confirmationToken },
+    if (isIndexPage && confirmationToken) {
+      navigate(`/confirmaccount#confirmation_token=${confirmationToken}`, {
         replace: true,
       });
     }
