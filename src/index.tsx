@@ -4,13 +4,12 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter } from "react-router-dom";
-import handlers, { createUser } from "./msw-handlers";
+import handlers from "./msw-handlers";
 import { setupWorker } from "msw";
 
 if (process.env.NODE_ENV === "development") {
   const worker = setupWorker(...handlers);
   worker.start();
-  createUser("john@doe.com", "password", "John Doe");
 }
 
 const root = ReactDOM.createRoot(

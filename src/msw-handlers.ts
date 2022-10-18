@@ -1,15 +1,47 @@
 import { rest } from "msw";
+import { v4 as uuid } from "uuid";
+
 import assert from "./common/assert";
 
 const REFRESH_TOKEN = "<refresh_token>";
 
-const users: { email: string; password: string; fullName: string }[] = [];
+const usersStorage = localStorage.getItem("msw/users");
+const users: { email: string; password: string; fullName: string }[] =
+  usersStorage === null ? [] : JSON.parse(usersStorage);
+
+const usersAwaitingConfirmationStorage = localStorage.getItem(
+  "msw/usersAwaitingConfirmation"
+);
+const usersAwaitingConfirmation: {
+  email: string;
+  password: string;
+  fullName: string;
+  token: string;
+}[] =
+  usersAwaitingConfirmationStorage === null
+    ? []
+    : JSON.parse(usersAwaitingConfirmationStorage);
 
 export function createUser(email: string, password: string, fullName: string) {
   users.push({ email, password, fullName });
+  localStorage.setItem("msw/users", JSON.stringify(users));
 }
 
-export function getUserByEmail(email: string) {
+export function createUserAwaitingConfirmation(
+  email: string,
+  password: string,
+  fullName: string
+) {
+  const token = uuid();
+  usersAwaitingConfirmation.push({ email, password, fullName, token });
+  localStorage.setItem(
+    "msw/usersAwaitingConfirmation",
+    JSON.stringify(usersAwaitingConfirmation)
+  );
+  return token;
+}
+
+function getUserByEmail(email: string) {
   return users.find((u) => u.email === email);
 }
 
@@ -78,6 +110,73 @@ const handlers = [
         ctx.json({
           email: email,
           user_metadata: { fullName: user.fullName },
+        })
+      );
+    }
+  ),
+  rest.post(
+    "https://bjerkandemo.netlify.app/.netlify/identity/signup",
+    async (req, res, ctx) => {
+      const { email, password, data } = JSON.parse(await req.text()) as {
+        email?: string;
+        password?: string;
+        data?: { fullName?: string };
+      };
+      assert(email !== undefined);
+      assert(password !== undefined);
+      assert(data !== undefined);
+
+      const { fullName } = data;
+      assert(fullName !== undefined);
+
+      const user = getUserByEmail(email);
+
+      if (user !== undefined) {
+        return res(
+          ctx.status(400),
+          ctx.json({
+            code: 400,
+            msg: "A user with this email address has already been registered",
+          })
+        );
+      }
+
+      createUserAwaitingConfirmation(email, password, fullName);
+
+      return res(
+        ctx.json({
+          email,
+          user_metadata: { fullName },
+        })
+      );
+    }
+  ),
+  rest.post(
+    "https://bjerkandemo.netlify.app/.netlify/identity/verify",
+    async (req, res, ctx) => {
+      const { token } = JSON.parse(await req.text()) as { token?: string };
+      assert(token !== undefined);
+
+      const match = usersAwaitingConfirmation.find(
+        (pair) => pair.token === token
+      );
+
+      if (match === undefined) {
+        return res(ctx.status(400), ctx.json({}));
+      }
+
+      const user = usersAwaitingConfirmation.find(
+        (user) => user.email === match.email
+      );
+      assert(user !== undefined);
+      createUser(user.email, user.password, user.fullName);
+
+      return res(
+        ctx.json({
+          access_token: encodeJwt({ email: user.email }),
+          token_type: "bearer",
+          expires_in: 3600,
+          refresh_token: REFRESH_TOKEN,
         })
       );
     }

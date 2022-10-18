@@ -162,7 +162,7 @@ function ConfirmAccountPage(props: { confirmationToken: string }) {
                   Account confirmed
                 </h2>
                 <p className="mt-2 text-center text-sm text-gray-600">
-                  You can now <Link to="/login">sign in to your account.</Link>
+                  You can now <Link to="/login">sign in to your account</Link>.
                 </p>
               </>
             )}
