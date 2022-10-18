@@ -5,6 +5,7 @@ import {
   CompanyLogo,
   Input,
   Label,
+  Link,
   PageContainer,
   Spinner,
 } from "../common/components";
@@ -28,13 +29,7 @@ export default function SignInPage() {
             Sign in
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Or{" "}
-            <a
-              href="/register"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              create an account
-            </a>
+            Or <Link to="/register">create an account</Link>
           </p>
         </div>
         <form
@@ -82,12 +77,7 @@ export default function SignInPage() {
 
           <div className="flex items-center justify-end">
             <div className="text-sm">
-              <a
-                href="/forgotpassword"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                Forgot your password?
-              </a>
+              <Link to="/forgotpassword">Forgot your password?</Link>
             </div>
           </div>
 

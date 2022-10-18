@@ -10,6 +10,7 @@ import {
   CompanyLogo,
   Input,
   Label,
+  Link,
   PageContainer,
   Spinner,
 } from "../common/components";
@@ -47,13 +48,7 @@ function RequestPasswordRecoveryPage() {
             Forgot your password?
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Or{" "}
-            <a
-              href="/login"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              go back to sign-in page
-            </a>
+            Or <Link to="/login">go back to sign-in page</Link>
           </p>
         </div>
 

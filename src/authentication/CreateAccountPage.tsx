@@ -6,6 +6,7 @@ import {
   CompanyLogo,
   Input,
   Label,
+  Link,
   PageContainer,
   Spinner,
 } from "../common/components";
@@ -47,13 +48,7 @@ function CreateAccountPage() {
             Create an account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Or{" "}
-            <a
-              href="/login"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              sign in to an existing account
-            </a>
+            Or <Link to="/login">sign in to an existing account</Link>
           </p>
         </div>
 
@@ -167,13 +162,7 @@ function ConfirmAccountPage(props: { confirmationToken: string }) {
                   Account confirmed
                 </h2>
                 <p className="mt-2 text-center text-sm text-gray-600">
-                  You can now{" "}
-                  <a
-                    href="/login"
-                    className="font-medium text-indigo-600 hover:text-indigo-500"
-                  >
-                    sign in to your account.
-                  </a>
+                  You can now <Link to="/login">sign in to your account.</Link>
                 </p>
               </>
             )}

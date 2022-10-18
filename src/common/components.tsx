@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { PropsWithoutRef, ReactNode } from "react";
 import styles from "./components.module.css";
+import { Link as ReactRouterLink, LinkProps } from "react-router-dom";
 
 export const PageContainer = (props: { children: ReactNode }) => (
   <div
@@ -97,4 +98,16 @@ export const Button = (
     )}
     <span className="-ml-1 mr-3">{props.children}</span>
   </button>
+);
+
+export const Link = (
+  props: LinkProps & React.RefAttributes<HTMLAnchorElement>
+) => (
+  <ReactRouterLink
+    {...props}
+    className={clsx(
+      "font-medium text-indigo-600 hover:text-indigo-500",
+      props.className
+    )}
+  />
 );

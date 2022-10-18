@@ -1,6 +1,7 @@
 import {
   Card,
   CompanyLogo,
+  Link,
   PageContainer,
   Spinner,
 } from "../common/components";
@@ -49,13 +50,7 @@ export default function CreateAccountPage() {
                   Account confirmed
                 </h2>
                 <p className="mt-2 text-center text-sm text-gray-600">
-                  You can now{" "}
-                  <a
-                    href="/login"
-                    className="font-medium text-indigo-600 hover:text-indigo-500"
-                  >
-                    sign in to your account.
-                  </a>
+                  You can now <Link to="/login">sign in to your account.</Link>
                 </p>
               </>
             )}
