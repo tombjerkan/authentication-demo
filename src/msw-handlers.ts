@@ -75,13 +75,11 @@ const handlers = [
       if (user === undefined || user.password !== password) {
         return res(
           ctx.status(400),
-          ctx.body(
-            JSON.stringify({
-              error: "invalid_grant",
-              error_description:
-                "No user found with that email, or password invalid.",
-            })
-          )
+          ctx.json({
+            error: "invalid_grant",
+            error_description:
+              "No user found with that email, or password invalid.",
+          })
         );
       }
 
