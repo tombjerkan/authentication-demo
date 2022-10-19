@@ -5,26 +5,129 @@ import assert from "./common/assert";
 
 const REFRESH_TOKEN = "<refresh_token>";
 
-const usersStorage = localStorage.getItem("msw/users");
-const users: { email: string; password: string; fullName: string }[] =
-  usersStorage === null ? [] : JSON.parse(usersStorage);
-
-const usersAwaitingConfirmationStorage = localStorage.getItem(
-  "msw/usersAwaitingConfirmation"
-);
-const usersAwaitingConfirmation: {
+interface User {
   email: string;
   password: string;
   fullName: string;
-  token: string;
-}[] =
-  usersAwaitingConfirmationStorage === null
-    ? []
-    : JSON.parse(usersAwaitingConfirmationStorage);
+}
+
+type UserAwaitingConfirmation = User & { token: string };
+
+class IdentityService {
+  getAccessToken(email: string, password: string) {
+    const user = this.getUserByEmail(email);
+
+    if (user === undefined || user.password !== password) {
+      return null;
+    }
+
+    return encodeJwt({ email: user.email });
+  }
+
+  getUser(bearerToken: string) {
+    const { email } = decodeJwt(bearerToken);
+    const user = this.getUserByEmail(email);
+
+    if (user === undefined) {
+      return null;
+    }
+
+    return { email, fullName: user?.fullName };
+  }
+
+  signup(
+    email: string,
+    password: string,
+    fullName: string
+  ): { code: 200 | 400 } {
+    const user = this.getUserByEmail(email);
+
+    if (user !== undefined) {
+      // TODO: handle properly
+      return {
+        code: 400,
+      };
+    }
+
+    this.usersAwaitingConfirmation = [
+      ...this.usersAwaitingConfirmation,
+      {
+        email,
+        password,
+        fullName,
+        token: uuid(),
+      },
+    ];
+
+    return { code: 200 };
+  }
+
+  verify(
+    confirmationToken: string
+  ): { code: 200; accessToken: string } | { code: 400 } {
+    const user = this.usersAwaitingConfirmation.find(
+      (user) => user.token === confirmationToken
+    );
+
+    if (user === undefined) {
+      // TODO: properly
+      return { code: 400 };
+    }
+
+    this.users = [
+      ...this.users,
+      { email: user.email, password: user.password, fullName: user.fullName },
+    ];
+
+    return { code: 200, accessToken: encodeJwt({ email: user.email }) };
+  }
+
+  private get users(): readonly User[] {
+    const usersStorage = localStorage.getItem("msw/IdentityService/users");
+    return usersStorage === null ? [] : JSON.parse(usersStorage);
+  }
+
+  private set users(users: readonly User[]) {
+    localStorage.setItem("msw/IdentityService/users", JSON.stringify(users));
+  }
+
+  private get usersAwaitingConfirmation(): readonly UserAwaitingConfirmation[] {
+    const usersAwaitingConfirmationStorage = localStorage.getItem(
+      "msw/IdentityService/usersAwaitingConfirmation"
+    );
+    return usersAwaitingConfirmationStorage === null
+      ? []
+      : JSON.parse(usersAwaitingConfirmationStorage);
+  }
+
+  private set usersAwaitingConfirmation(
+    users: readonly UserAwaitingConfirmation[]
+  ) {
+    localStorage.setItem(
+      "msw/IdentityService/usersAwaitingConfirmation",
+      JSON.stringify(users)
+    );
+  }
+
+  private getUserByEmail(email: string) {
+    return this.users.find((u) => u.email === email);
+  }
+
+  getConfirmationTokenForUser(email: string) {
+    return this.usersAwaitingConfirmation.find((u) => u.email === email)?.token;
+  }
+}
+
+const identityService = new IdentityService();
 
 export function createUser(email: string, password: string, fullName: string) {
-  users.push({ email, password, fullName });
-  localStorage.setItem("msw/users", JSON.stringify(users));
+  identityService.signup(email, password, fullName);
+  const confirmationToken = identityService.getConfirmationTokenForUser(email);
+  assert(
+    confirmationToken !== undefined,
+    "token should be defined as it was created in this same function"
+  );
+  identityService.verify(confirmationToken);
 }
 
 export function createUserAwaitingConfirmation(
@@ -32,17 +135,8 @@ export function createUserAwaitingConfirmation(
   password: string,
   fullName: string
 ) {
-  const token = uuid();
-  usersAwaitingConfirmation.push({ email, password, fullName, token });
-  localStorage.setItem(
-    "msw/usersAwaitingConfirmation",
-    JSON.stringify(usersAwaitingConfirmation)
-  );
-  return token;
-}
-
-function getUserByEmail(email: string) {
-  return users.find((u) => u.email === email);
+  identityService.signup(email, password, fullName);
+  return identityService.getConfirmationTokenForUser(email);
 }
 
 function encodeJwt(data: object = {}) {
@@ -70,9 +164,10 @@ const handlers = [
       const password = body.get("password");
       assert(email !== null);
       assert(password !== null);
-      const user = getUserByEmail(email);
 
-      if (user === undefined || user.password !== password) {
+      const token = identityService.getAccessToken(email, password);
+
+      if (token === null) {
         return res(
           ctx.status(400),
           ctx.json({
@@ -85,7 +180,7 @@ const handlers = [
 
       return res(
         ctx.json({
-          access_token: encodeJwt({ email: user.email }),
+          access_token: token,
           token_type: "bearer",
           expires_in: 3600,
           refresh_token: REFRESH_TOKEN,
@@ -101,8 +196,12 @@ const handlers = [
       assert(authorizationHeader.startsWith("Bearer "));
       const token = authorizationHeader.slice("Bearer ".length);
       const { email } = decodeJwt(token);
-      const user = getUserByEmail(email);
-      assert(user !== undefined);
+
+      const user = identityService.getUser(token);
+      assert(
+        user !== null,
+        "should not be able to pass invalid token in mocks"
+      );
 
       return res(
         ctx.json({
@@ -127,9 +226,9 @@ const handlers = [
       const { fullName } = data;
       assert(fullName !== undefined);
 
-      const user = getUserByEmail(email);
+      const result = identityService.signup(email, password, fullName);
 
-      if (user !== undefined) {
+      if (result.code !== 200) {
         return res(
           ctx.status(400),
           ctx.json({
@@ -138,8 +237,6 @@ const handlers = [
           })
         );
       }
-
-      createUserAwaitingConfirmation(email, password, fullName);
 
       return res(
         ctx.json({
@@ -152,26 +249,20 @@ const handlers = [
   rest.post(
     "https://bjerkandemo.netlify.app/.netlify/identity/verify",
     async (req, res, ctx) => {
-      const { token } = JSON.parse(await req.text()) as { token?: string };
-      assert(token !== undefined);
+      const { token: confirmationToken } = JSON.parse(await req.text()) as {
+        token?: string;
+      };
+      assert(confirmationToken !== undefined);
 
-      const match = usersAwaitingConfirmation.find(
-        (pair) => pair.token === token
-      );
+      const result = identityService.verify(confirmationToken);
 
-      if (match === undefined) {
-        return res(ctx.status(400), ctx.json({}));
+      if (result.code === 400) {
+        return res(ctx.status(400));
       }
-
-      const user = usersAwaitingConfirmation.find(
-        (user) => user.email === match.email
-      );
-      assert(user !== undefined);
-      createUser(user.email, user.password, user.fullName);
 
       return res(
         ctx.json({
-          access_token: encodeJwt({ email: user.email }),
+          access_token: result.accessToken,
           token_type: "bearer",
           expires_in: 3600,
           refresh_token: REFRESH_TOKEN,
