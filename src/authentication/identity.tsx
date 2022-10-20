@@ -23,9 +23,10 @@ export const confirmAccount = (token: string) => client.confirm(token);
 export const requestPasswordRecovery = (email: string) =>
   client.requestPasswordRecovery(email);
 
-export async function recoverPassword(token: string, newPassword: string) {
-  const user = await client.recover(token);
-  await user.update({ password: newPassword }).finally(() => user.logout());
+export async function changePassword(newPassword: string) {
+  const user = client.currentUser();
+  assert(user !== null);
+  await user.update({ password: newPassword });
 }
 
 interface User {
@@ -93,6 +94,35 @@ export function useLogin(): [
   }
 
   return [login, isInProgress, isError];
+}
+
+export function useRecover(token: string): [boolean, boolean] {
+  const context = useContext(AuthContext);
+  const [isInProgress, setIsInProgress] = useState(false);
+  const [isError, setIsError] = useState(false);
+
+  if (context === undefined) {
+    throw new Error("useVerifyRecovery must be used within an AuthProvider");
+  }
+
+  const { setUser } = context;
+
+  useEffect(() => {
+    setIsInProgress(true);
+
+    client
+      .recover(token)
+      .then((response) =>
+        setUser({
+          fullName: response.user_metadata.fullName,
+          email: response.email,
+        })
+      )
+      .catch(() => setIsError(true))
+      .finally(() => setIsInProgress(false));
+  }, [token, setUser]);
+
+  return [isInProgress, isError];
 }
 
 export function useLogout() {

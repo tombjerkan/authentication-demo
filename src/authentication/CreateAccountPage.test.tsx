@@ -2,7 +2,7 @@ import App from "../App";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
-import { createUser, createUserAwaitingConfirmation } from "../msw-handlers";
+import { createUser, identityService } from "../msw-handlers";
 
 const renderWithRouter = (
   ui: Parameters<typeof render>[0],
@@ -25,6 +25,15 @@ function LocationValue() {
 async function expectPathnameToBe(expected: string) {
   const locationValueDiv = screen.getByTestId("location-value");
   expect(locationValueDiv).toHaveAttribute("data-pathname", expected);
+}
+
+function createUserAwaitingConfirmation(
+  email: string,
+  password: string,
+  fullName: string
+) {
+  identityService.signup(email, password, fullName);
+  return identityService.getConfirmationTokenForUser(email);
 }
 
 createUser("test@email.com", "testpassword", "Test User");

@@ -12,6 +12,7 @@ interface User {
 }
 
 type UserAwaitingConfirmation = User & { token: string };
+type UserAwaitingRecovery = { email: string; token: string };
 
 class IdentityService {
   getAccessToken(email: string, password: string) {
@@ -62,24 +63,68 @@ class IdentityService {
     return { code: 200 };
   }
 
-  verify(
-    confirmationToken: string
-  ): { code: 200; accessToken: string } | { code: 400 } {
-    const user = this.usersAwaitingConfirmation.find(
-      (user) => user.token === confirmationToken
+  verify(token: string): { code: 200; accessToken: string } | { code: 400 } {
+    const userAwaitingConfirmation = this.usersAwaitingConfirmation.find(
+      (user) => user.token === token
     );
 
-    if (user === undefined) {
+    const userAwaitingRecovery = this.usersAwaitingRecovery.find(
+      (u) => u.token === token
+    );
+
+    if (userAwaitingConfirmation !== undefined) {
+      this.users = [
+        ...this.users,
+        {
+          email: userAwaitingConfirmation.email,
+          password: userAwaitingConfirmation.password,
+          fullName: userAwaitingConfirmation.fullName,
+        },
+      ];
+
+      return {
+        code: 200,
+        accessToken: encodeJwt({ email: userAwaitingConfirmation.email }),
+      };
+    } else if (userAwaitingRecovery !== undefined) {
+      return {
+        code: 200,
+        accessToken: encodeJwt({ email: userAwaitingRecovery.email }),
+      };
+    } else {
       // TODO: properly
       return { code: 400 };
     }
+  }
 
-    this.users = [
-      ...this.users,
-      { email: user.email, password: user.password, fullName: user.fullName },
+  recover(email: string): { code: 200 } | { code: 404 } {
+    const user = this.getUserByEmail(email);
+
+    if (user === undefined) {
+      return { code: 404 };
+    }
+
+    this.usersAwaitingRecovery = [
+      ...this.usersAwaitingRecovery,
+      { email, token: uuid() },
     ];
 
-    return { code: 200, accessToken: encodeJwt({ email: user.email }) };
+    return { code: 200 };
+  }
+
+  updateUser(email: string, attributes: Omit<User, "email">) {
+    const user = this.getUserByEmail(email);
+
+    if (user === undefined) {
+      return { code: 404 };
+    }
+
+    this.users = [
+      ...this.users.filter((u) => u.email === email),
+      { ...user, ...attributes },
+    ];
+
+    return { code: 200 };
   }
 
   private get users(): readonly User[] {
@@ -109,6 +154,22 @@ class IdentityService {
     );
   }
 
+  private get usersAwaitingRecovery(): readonly UserAwaitingRecovery[] {
+    const usersAwaitingRecoveryStorage = localStorage.getItem(
+      "msw/IdentityService/usersAwaitingRecovery"
+    );
+    return usersAwaitingRecoveryStorage === null
+      ? []
+      : JSON.parse(usersAwaitingRecoveryStorage);
+  }
+
+  private set usersAwaitingRecovery(users: readonly UserAwaitingRecovery[]) {
+    localStorage.setItem(
+      "msw/IdentityService/usersAwaitingRecovery",
+      JSON.stringify(users)
+    );
+  }
+
   private getUserByEmail(email: string) {
     return this.users.find((u) => u.email === email);
   }
@@ -116,9 +177,13 @@ class IdentityService {
   getConfirmationTokenForUser(email: string) {
     return this.usersAwaitingConfirmation.find((u) => u.email === email)?.token;
   }
+
+  getRecoveryTokenForUser(email: string) {
+    return this.usersAwaitingRecovery.find((u) => u.email === email)?.token;
+  }
 }
 
-const identityService = new IdentityService();
+export const identityService = new IdentityService();
 
 export function createUser(email: string, password: string, fullName: string) {
   identityService.signup(email, password, fullName);
@@ -128,15 +193,6 @@ export function createUser(email: string, password: string, fullName: string) {
     "token should be defined as it was created in this same function"
   );
   identityService.verify(confirmationToken);
-}
-
-export function createUserAwaitingConfirmation(
-  email: string,
-  password: string,
-  fullName: string
-) {
-  identityService.signup(email, password, fullName);
-  return identityService.getConfirmationTokenForUser(email);
 }
 
 function encodeJwt(data: object = {}) {
@@ -268,6 +324,49 @@ const handlers = [
           refresh_token: REFRESH_TOKEN,
         })
       );
+    }
+  ),
+  rest.post(
+    "https://bjerkandemo.netlify.app/.netlify/identity/recover",
+    async (req, res, ctx) => {
+      const { email } = JSON.parse(await req.text()) as {
+        email?: string;
+      };
+      assert(email !== undefined);
+
+      const result = identityService.recover(email);
+
+      if (result.code !== 200) {
+        return res(
+          ctx.status(404),
+          ctx.json({
+            code: 404,
+            msg: "User not found",
+          })
+        );
+      }
+
+      return res(
+        ctx.json({
+          email,
+        })
+      );
+    }
+  ),
+  rest.put(
+    "https://bjerkandemo.netlify.app/.netlify/identity/user",
+    async (req, res, ctx) => {
+      const authorizationHeader = req.headers.get("Authorization");
+      assert(authorizationHeader !== null);
+      assert(authorizationHeader.startsWith("Bearer "));
+      const token = authorizationHeader.slice("Bearer ".length);
+      const { email } = decodeJwt(token);
+
+      const attributes = await req.json();
+
+      identityService.updateUser(email, attributes);
+
+      return res(ctx.status(200));
     }
   ),
 ];
