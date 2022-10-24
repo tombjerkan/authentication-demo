@@ -2,8 +2,12 @@ import App from "../App";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
-import { createUser } from "../msw-handlers";
+import { createUser, identityService } from "../msw-handlers";
 import { faker } from "@faker-js/faker";
+
+beforeEach(() => {
+  identityService.reset();
+});
 
 const renderWithRouter = (
   ui: Parameters<typeof render>[0],

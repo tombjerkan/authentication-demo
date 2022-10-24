@@ -5,6 +5,10 @@ import { MemoryRouter, useLocation } from "react-router-dom";
 import { createUser, identityService } from "../msw-handlers";
 import { faker } from "@faker-js/faker";
 
+beforeEach(() => {
+  identityService.reset();
+});
+
 const renderWithRouter = (
   ui: Parameters<typeof render>[0],
   initialUrl: string,

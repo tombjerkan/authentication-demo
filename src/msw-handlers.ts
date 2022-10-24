@@ -181,6 +181,12 @@ class IdentityService {
   getRecoveryTokenForUser(email: string) {
     return this.usersAwaitingRecovery.find((u) => u.email === email)?.token;
   }
+
+  reset() {
+    this.users = [];
+    this.usersAwaitingConfirmation = [];
+    this.usersAwaitingRecovery = [];
+  }
 }
 
 export const identityService = new IdentityService();
