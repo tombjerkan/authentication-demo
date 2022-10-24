@@ -1,5 +1,5 @@
 import App from "../App";
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { createUser, identityService } from "../msw-handlers";
@@ -27,17 +27,6 @@ async function expectPathnameToBe(expected: string) {
   expect(locationValueDiv).toHaveAttribute("data-pathname", expected);
 }
 
-function createUserAwaitingConfirmation(
-  email: string,
-  password: string,
-  fullName: string
-) {
-  identityService.signup(email, password, fullName);
-  return identityService.getConfirmationTokenForUser(email);
-}
-
-createUser("test@email.com", "testpassword", "Test User");
-
 test("can create user", async () => {
   renderWithRouter(<App />, "/register");
 
@@ -46,20 +35,38 @@ test("can create user", async () => {
   userEvent.type(screen.getByLabelText("Password"), "mypassword");
   userEvent.click(screen.getByRole("button", { name: "Create account" }));
 
-  expect(await screen.findByText("Success")).toBeInTheDocument();
+  await screen.findByText("Success");
+
+  // When the user follows the link in the confirmation email they received, it
+  // will be a fresh render of the whole app. To recreate this, we need to
+  // completely unmount the app and start anew.
+  cleanup();
+
+  const confirmationToken =
+    identityService.getConfirmationTokenForUser("newuser@email.com");
+  renderWithRouter(<App />, "/#confirmation_token=" + confirmationToken);
+
+  expectPathnameToBe("/register");
+  await screen.findByText("Account confirmed");
+
+  userEvent.click(screen.getByText("sign in to your account"));
+
+  await expectPathnameToBe("/login");
 });
 
 test("shows error if existing user for given email", async () => {
+  createUser("existinguser@email.com", "testpassword", "Test User");
   renderWithRouter(<App />, "/register");
 
   userEvent.type(screen.getByLabelText("Full name"), "New User");
-  userEvent.type(screen.getByLabelText("Email address"), "test@email.com");
+  userEvent.type(
+    screen.getByLabelText("Email address"),
+    "existinguser@email.com"
+  );
   userEvent.type(screen.getByLabelText("Password"), "mypassword");
   userEvent.click(screen.getByRole("button", { name: "Create account" }));
 
-  expect(
-    await screen.findByText("Could not create an account.")
-  ).toBeInTheDocument();
+  await screen.findByText("Could not create an account.");
 });
 
 test("can navigate to login page", async () => {
@@ -68,23 +75,7 @@ test("can navigate to login page", async () => {
   await expectPathnameToBe("/login");
 });
 
-test("confirms account if confirmation token is present in url", async () => {
-  const token = createUserAwaitingConfirmation(
-    "needconfirm@email.com",
-    "password",
-    "Need Confirm"
-  );
-  renderWithRouter(<App />, "/#confirmation_token=" + token);
-
-  await expectPathnameToBe("/register");
-  expect(await screen.findByText("Account confirmed")).toBeInTheDocument();
-
-  userEvent.click(screen.getByText("sign in to your account"));
-
-  await expectPathnameToBe("/login");
-});
-
 test("shows error if could not confirm account using confirmation token", async () => {
   renderWithRouter(<App />, "/#confirmation_token=notvalid");
-  expect(await screen.findByText("Something went wrong")).toBeInTheDocument();
+  await screen.findByText("Something went wrong");
 });

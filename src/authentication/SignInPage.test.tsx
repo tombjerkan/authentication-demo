@@ -26,9 +26,8 @@ async function expectPathnameToBe(expected: string) {
   expect(locationValueDiv).toHaveAttribute("data-pathname", expected);
 }
 
-createUser("test@email.com", "testpassword", "Test User");
-
 test("can login with valid user email and password", async () => {
+  createUser("test@email.com", "testpassword", "Test User");
   renderWithRouter(<App />);
 
   userEvent.type(screen.getByLabelText("Email address"), "test@email.com");
@@ -39,6 +38,7 @@ test("can login with valid user email and password", async () => {
 });
 
 test("shows error if invalid user email is entered", async () => {
+  createUser("test@email.com", "testpassword", "Test User");
   renderWithRouter(<App />);
 
   userEvent.type(screen.getByLabelText("Email address"), "invalid@email.com");
@@ -51,6 +51,7 @@ test("shows error if invalid user email is entered", async () => {
 });
 
 test("shows error if invalid password is entered", async () => {
+  createUser("test@email.com", "testpassword", "Test User");
   renderWithRouter(<App />);
 
   userEvent.type(screen.getByLabelText("Email address"), "test@email.com");

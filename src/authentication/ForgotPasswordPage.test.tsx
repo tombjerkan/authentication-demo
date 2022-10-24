@@ -1,5 +1,5 @@
 import App from "../App";
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { createUser, identityService } from "../msw-handlers";
@@ -27,17 +27,38 @@ async function expectPathnameToBe(expected: string) {
   expect(locationValueDiv).toHaveAttribute("data-pathname", expected);
 }
 
-createUser("test@email.com", "testpassword", "Test User");
-
-test("can request password reset email", async () => {
+test("can recover account and reset password", async () => {
+  createUser("test@email.com", "", "");
   renderWithRouter(<App />, "/forgotpassword");
 
   userEvent.type(screen.getByLabelText("Email address"), "test@email.com");
   userEvent.click(screen.getByText("Send password reset email"));
 
-  expect(
-    await screen.findByText("Password reset email sent")
-  ).toBeInTheDocument();
+  await screen.findByText("Password reset email sent");
+
+  // When the user follows the link in the recovery email they received, it
+  // will be a fresh render of the whole app. To recreate this, we need to
+  // completely unmount the app and start anew.
+  cleanup();
+
+  const token = identityService.getRecoveryTokenForUser("test@email.com");
+
+  renderWithRouter(<App />, "/#recovery_token=" + token);
+
+  await expectPathnameToBe("/forgotpassword");
+  await screen.findByText("Choose a new password");
+  userEvent.type(screen.getByLabelText("New password"), "mynewpassword");
+
+  // Shows error if passwords aren't the same
+  userEvent.type(screen.getByLabelText("Repeat password"), "anotherpassword");
+  userEvent.click(screen.getByText("Change password"));
+  screen.getByText("Something went wrong.");
+
+  userEvent.clear(screen.getByLabelText("Repeat password"));
+  userEvent.type(screen.getByLabelText("Repeat password"), "mynewpassword");
+  userEvent.click(screen.getByText("Change password"));
+
+  await screen.findByText("Password changed");
 });
 
 test("shows error if no user with given email", async () => {
@@ -46,9 +67,7 @@ test("shows error if no user with given email", async () => {
   userEvent.type(screen.getByLabelText("Email address"), "invalid@email.com");
   userEvent.click(screen.getByText("Send password reset email"));
 
-  expect(
-    await screen.findByText("There is no account with the given email address.")
-  ).toBeInTheDocument();
+  await screen.findByText("There is no account with the given email address.");
 });
 
 test("can navigate to login page", async () => {
@@ -57,30 +76,7 @@ test("can navigate to login page", async () => {
   await expectPathnameToBe("/login");
 });
 
-test("can change password if recovery token is present in url", async () => {
-  const email = "test@email.com";
-  identityService.recover(email);
-  const token = identityService.getRecoveryTokenForUser(email);
-
-  renderWithRouter(<App />, "/#recovery_token=" + token);
-
-  await expectPathnameToBe("/forgotpassword");
-  expect(await screen.findByText("Choose a new password")).toBeInTheDocument();
-  userEvent.type(screen.getByLabelText("New password"), "mynewpassword");
-
-  // Shows error if passwords aren't the same
-  userEvent.type(screen.getByLabelText("Repeat password"), "anotherpassword");
-  userEvent.click(screen.getByText("Change password"));
-  expect(screen.getByText("Something went wrong.")).toBeInTheDocument();
-
-  userEvent.clear(screen.getByLabelText("Repeat password"));
-  userEvent.type(screen.getByLabelText("Repeat password"), "mynewpassword");
-  userEvent.click(screen.getByText("Change password"));
-
-  expect(await screen.findByText("Password changed")).toBeInTheDocument();
-});
-
 test("shows error if could not recover account using recovery token", async () => {
   renderWithRouter(<App />, "/#recovery_token=notvalid");
-  expect(await screen.findByText("Something went wrong")).toBeInTheDocument();
+  await screen.findByText("Something went wrong");
 });
