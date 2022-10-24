@@ -3,6 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { createUser } from "../msw-handlers";
+import { faker } from "@faker-js/faker";
 
 const renderWithRouter = (
   ui: Parameters<typeof render>[0],
@@ -27,22 +28,26 @@ async function expectPathnameToBe(expected: string) {
 }
 
 test("can login with valid user email and password", async () => {
-  createUser("test@email.com", "testpassword", "Test User");
+  const email = faker.internet.email();
+  const password = faker.internet.password();
+  createUser(email, password, faker.name.fullName());
   renderWithRouter(<App />);
 
-  userEvent.type(screen.getByLabelText("Email address"), "test@email.com");
-  userEvent.type(screen.getByLabelText("Password"), "testpassword");
+  userEvent.type(screen.getByLabelText("Email address"), email);
+  userEvent.type(screen.getByLabelText("Password"), password);
   userEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
   await waitFor(() => expectPathnameToBe("/user"));
 });
 
 test("shows error if invalid user email is entered", async () => {
-  createUser("test@email.com", "testpassword", "Test User");
   renderWithRouter(<App />);
 
-  userEvent.type(screen.getByLabelText("Email address"), "invalid@email.com");
-  userEvent.type(screen.getByLabelText("Password"), "testpassword");
+  userEvent.type(
+    screen.getByLabelText("Email address"),
+    faker.internet.email()
+  );
+  userEvent.type(screen.getByLabelText("Password"), faker.internet.password());
   userEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
   expect(
@@ -51,11 +56,12 @@ test("shows error if invalid user email is entered", async () => {
 });
 
 test("shows error if invalid password is entered", async () => {
-  createUser("test@email.com", "testpassword", "Test User");
+  const email = faker.internet.email();
+  createUser(email, faker.internet.password(), faker.name.fullName());
   renderWithRouter(<App />);
 
-  userEvent.type(screen.getByLabelText("Email address"), "test@email.com");
-  userEvent.type(screen.getByLabelText("Password"), "invalidpassword");
+  userEvent.type(screen.getByLabelText("Email address"), email);
+  userEvent.type(screen.getByLabelText("Password"), faker.internet.password());
   userEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
   expect(

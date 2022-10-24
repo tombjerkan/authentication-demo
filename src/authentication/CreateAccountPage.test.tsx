@@ -3,6 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { createUser, identityService } from "../msw-handlers";
+import { faker } from "@faker-js/faker";
 
 const renderWithRouter = (
   ui: Parameters<typeof render>[0],
@@ -28,11 +29,12 @@ async function expectPathnameToBe(expected: string) {
 }
 
 test("can create user", async () => {
+  const email = faker.internet.email();
   renderWithRouter(<App />, "/register");
 
-  userEvent.type(screen.getByLabelText("Full name"), "New User");
-  userEvent.type(screen.getByLabelText("Email address"), "newuser@email.com");
-  userEvent.type(screen.getByLabelText("Password"), "mypassword");
+  userEvent.type(screen.getByLabelText("Full name"), faker.name.fullName());
+  userEvent.type(screen.getByLabelText("Email address"), email);
+  userEvent.type(screen.getByLabelText("Password"), faker.internet.password());
   userEvent.click(screen.getByRole("button", { name: "Create account" }));
 
   await screen.findByText("Success");
@@ -42,8 +44,7 @@ test("can create user", async () => {
   // completely unmount the app and start anew.
   cleanup();
 
-  const confirmationToken =
-    identityService.getConfirmationTokenForUser("newuser@email.com");
+  const confirmationToken = identityService.getConfirmationTokenForUser(email);
   renderWithRouter(<App />, "/#confirmation_token=" + confirmationToken);
 
   expectPathnameToBe("/register");
@@ -55,15 +56,13 @@ test("can create user", async () => {
 });
 
 test("shows error if existing user for given email", async () => {
-  createUser("existinguser@email.com", "testpassword", "Test User");
+  const existingEmail = faker.internet.email();
+  createUser(existingEmail, faker.internet.password(), faker.name.fullName());
   renderWithRouter(<App />, "/register");
 
-  userEvent.type(screen.getByLabelText("Full name"), "New User");
-  userEvent.type(
-    screen.getByLabelText("Email address"),
-    "existinguser@email.com"
-  );
-  userEvent.type(screen.getByLabelText("Password"), "mypassword");
+  userEvent.type(screen.getByLabelText("Full name"), faker.name.fullName());
+  userEvent.type(screen.getByLabelText("Email address"), existingEmail);
+  userEvent.type(screen.getByLabelText("Password"), faker.internet.password());
   userEvent.click(screen.getByRole("button", { name: "Create account" }));
 
   await screen.findByText("Could not create an account.");

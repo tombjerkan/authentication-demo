@@ -3,6 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { createUser, identityService } from "../msw-handlers";
+import { faker } from "@faker-js/faker";
 
 const renderWithRouter = (
   ui: Parameters<typeof render>[0],
@@ -28,10 +29,11 @@ async function expectPathnameToBe(expected: string) {
 }
 
 test("can recover account and reset password", async () => {
-  createUser("test@email.com", "", "");
+  const email = faker.internet.email();
+  createUser(email, faker.internet.password(), faker.name.fullName());
   renderWithRouter(<App />, "/forgotpassword");
 
-  userEvent.type(screen.getByLabelText("Email address"), "test@email.com");
+  userEvent.type(screen.getByLabelText("Email address"), email);
   userEvent.click(screen.getByText("Send password reset email"));
 
   await screen.findByText("Password reset email sent");
@@ -41,21 +43,27 @@ test("can recover account and reset password", async () => {
   // completely unmount the app and start anew.
   cleanup();
 
-  const token = identityService.getRecoveryTokenForUser("test@email.com");
+  const token = identityService.getRecoveryTokenForUser(email);
 
   renderWithRouter(<App />, "/#recovery_token=" + token);
 
   await expectPathnameToBe("/forgotpassword");
   await screen.findByText("Choose a new password");
-  userEvent.type(screen.getByLabelText("New password"), "mynewpassword");
+
+  const newPassword = faker.internet.password();
+
+  userEvent.type(screen.getByLabelText("New password"), newPassword);
 
   // Shows error if passwords aren't the same
-  userEvent.type(screen.getByLabelText("Repeat password"), "anotherpassword");
+  userEvent.type(
+    screen.getByLabelText("Repeat password"),
+    faker.internet.password()
+  );
   userEvent.click(screen.getByText("Change password"));
   screen.getByText("Something went wrong.");
 
   userEvent.clear(screen.getByLabelText("Repeat password"));
-  userEvent.type(screen.getByLabelText("Repeat password"), "mynewpassword");
+  userEvent.type(screen.getByLabelText("Repeat password"), newPassword);
   userEvent.click(screen.getByText("Change password"));
 
   await screen.findByText("Password changed");
@@ -64,7 +72,10 @@ test("can recover account and reset password", async () => {
 test("shows error if no user with given email", async () => {
   renderWithRouter(<App />, "/forgotpassword");
 
-  userEvent.type(screen.getByLabelText("Email address"), "invalid@email.com");
+  userEvent.type(
+    screen.getByLabelText("Email address"),
+    faker.internet.email()
+  );
   userEvent.click(screen.getByText("Send password reset email"));
 
   await screen.findByText("There is no account with the given email address.");
