@@ -41,7 +41,9 @@ test("can create user", async () => {
   userEvent.type(screen.getByLabelText("Password"), faker.internet.password());
   userEvent.click(screen.getByRole("button", { name: "Create account" }));
 
-  await screen.findByText("Success");
+  await screen.findByText(
+    /A link to confirm your new account has been sent to (.+)@(.+)\./
+  );
 
   // When the user follows the link in the confirmation email they received, it
   // will be a fresh render of the whole app. To recreate this, we need to

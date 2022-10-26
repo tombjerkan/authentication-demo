@@ -40,6 +40,10 @@ function RequestPasswordRecoveryPage() {
       .catch(() => setState("error"));
   }
 
+  if (state === "success") {
+    return <ResetEmailSentPage email={email} />;
+  }
+
   return (
     <PageContainer>
       <Card className="w-full max-w-md space-y-8">
@@ -53,8 +57,13 @@ function RequestPasswordRecoveryPage() {
           </p>
         </div>
 
+        <p>
+          Enter the email address for your account, and we'll email you a link
+          to reset your password.
+        </p>
+
         <form
-          className="mt-8 space-y-6"
+          className="mt-8"
           onSubmit={(event) => {
             event.preventDefault();
             submit();
@@ -70,34 +79,53 @@ function RequestPasswordRecoveryPage() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               type="email"
-              disabled={state === "in-progress" || state === "success"}
+              disabled={state === "in-progress"}
               required
               className="mt-1"
             />
-
-            {state === "error" && (
-              <div className="mt-2 text-sm text-red-600">
-                There is no account with the given email address.
-              </div>
-            )}
           </div>
-
-          <div>
-            <Button
-              type="submit"
-              disabled={state === "in-progress" || state === "success"}
-              icon={
-                state === "in-progress" ? (
-                  <Spinner className="text-white" />
-                ) : undefined
-              }
-            >
-              {state === "success"
-                ? "Password reset email sent"
-                : "Send password reset email"}
-            </Button>
-          </div>
+          {state === "error" && (
+            <p className="mt-2 text-sm text-red-600">
+              No account exists for the given email address.
+            </p>
+          )}
+          <Button
+            type="submit"
+            disabled={state === "in-progress"}
+            icon={
+              state === "in-progress" ? (
+                <Spinner className="text-white" />
+              ) : undefined
+            }
+            className="mt-6"
+          >
+            {state === "in-progress"
+              ? "Sending reset email"
+              : "Send reset email"}
+          </Button>
         </form>
+      </Card>
+    </PageContainer>
+  );
+}
+
+function ResetEmailSentPage(props: { email: string }) {
+  return (
+    <PageContainer>
+      <Card className="w-full max-w-md space-y-8">
+        <div>
+          <CompanyLogo className="mx-auto h-12 w-auto" />
+          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+            Forgot your password?
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Or <Link to="/login">go back to sign-in page</Link>
+          </p>
+        </div>
+
+        <p className="mt-2">
+          A link to reset your password has been sent to {props.email}.
+        </p>
       </Card>
     </PageContainer>
   );
@@ -147,14 +175,11 @@ function ChangePasswordPage(props: { recoveryToken: string }) {
           </>
         )}
 
-        {!isRecoveryInProgress && (
+        {!isRecoveryInProgress && state !== "success" && (
           <>
-            <div>
-              <CompanyLogo className="mx-auto h-12 w-auto" />
-              <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-                Choose a new password
-              </h2>
-            </div>
+            <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+              Choose a new password
+            </h2>
             <form
               className="mt-8 space-y-6"
               onSubmit={(event) => {
@@ -199,7 +224,7 @@ function ChangePasswordPage(props: { recoveryToken: string }) {
               <div>
                 <Button
                   type="submit"
-                  disabled={state === "in-progress" || state === "success"}
+                  disabled={state === "in-progress"}
                   icon={
                     state === "in-progress" ? (
                       <Spinner className="text-white" />
@@ -209,10 +234,20 @@ function ChangePasswordPage(props: { recoveryToken: string }) {
                   {(state === "initial" || state === "error") &&
                     "Change password"}
                   {state === "in-progress" && "Changing password"}
-                  {state === "success" && "Password changed"}
                 </Button>
               </div>
             </form>
+          </>
+        )}
+
+        {state === "success" && (
+          <>
+            <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+              Password changed
+            </h2>
+            <p className="mt-2 text-center text-sm text-gray-600">
+              You can now <Link to="/">continue to the application</Link>.
+            </p>
           </>
         )}
       </Card>

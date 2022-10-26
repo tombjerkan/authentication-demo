@@ -38,9 +38,11 @@ test("can recover account and reset password", async () => {
   renderWithRouter(<App />, "/forgotpassword");
 
   userEvent.type(screen.getByLabelText("Email address"), email);
-  userEvent.click(screen.getByText("Send password reset email"));
+  userEvent.click(screen.getByText("Send reset email"));
 
-  await screen.findByText("Password reset email sent");
+  await screen.findByText(
+    /A link to reset your password has been sent to (.+)@(.+)./
+  );
 
   // When the user follows the link in the recovery email they received, it
   // will be a fresh render of the whole app. To recreate this, we need to
@@ -71,6 +73,9 @@ test("can recover account and reset password", async () => {
   userEvent.click(screen.getByText("Change password"));
 
   await screen.findByText("Password changed");
+
+  userEvent.click(screen.getByText("continue to the application"));
+  await expectPathnameToBe("/user");
 });
 
 test("shows error if no user with given email", async () => {
@@ -80,9 +85,9 @@ test("shows error if no user with given email", async () => {
     screen.getByLabelText("Email address"),
     faker.internet.email()
   );
-  userEvent.click(screen.getByText("Send password reset email"));
+  userEvent.click(screen.getByText("Send reset email"));
 
-  await screen.findByText("There is no account with the given email address.");
+  await screen.findByText("No account exists for the given email address.");
 });
 
 test("can navigate to login page", async () => {
