@@ -7,8 +7,6 @@ import {
 } from "../authentication/identity";
 import {
   Button,
-  Card,
-  CompanyLogo,
   Input,
   Label,
   Link,
@@ -46,9 +44,8 @@ function RequestPasswordRecoveryPage() {
 
   return (
     <PageContainer>
-      <Card className="w-full max-w-md space-y-8">
+      <div className="space-y-8">
         <div>
-          <CompanyLogo className="mx-auto h-12 w-auto" />
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
             Forgot your password?
           </h2>
@@ -104,7 +101,7 @@ function RequestPasswordRecoveryPage() {
               : "Send reset email"}
           </Button>
         </form>
-      </Card>
+      </div>
     </PageContainer>
   );
 }
@@ -112,9 +109,8 @@ function RequestPasswordRecoveryPage() {
 function ResetEmailSentPage(props: { email: string }) {
   return (
     <PageContainer>
-      <Card className="w-full max-w-md space-y-8">
+      <div className="space-y-8">
         <div>
-          <CompanyLogo className="mx-auto h-12 w-auto" />
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
             Forgot your password?
           </h2>
@@ -126,7 +122,7 @@ function ResetEmailSentPage(props: { email: string }) {
         <p className="mt-2">
           A link to reset your password has been sent to {props.email}.
         </p>
-      </Card>
+      </div>
     </PageContainer>
   );
 }
@@ -157,100 +153,98 @@ function ChangePasswordPage(props: { recoveryToken: string }) {
 
   return (
     <PageContainer>
-      <Card className="w-full max-w-md space-y-8">
-        {isRecoveryInProgress && (
-          <div className="flex justify-center text-indigo-600">
-            <Spinner />
-          </div>
-        )}
+      {isRecoveryInProgress && (
+        <div className="flex justify-center text-indigo-600">
+          <Spinner />
+        </div>
+      )}
 
-        {isRecoveryError && (
-          <>
-            <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-              Something went wrong
-            </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
-              Please try again or contact support if the problem continues.
-            </p>
-          </>
-        )}
+      {isRecoveryError && (
+        <>
+          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+            Something went wrong
+          </h2>
+          <p className="mt-10 text-center text-sm text-gray-600">
+            Please try again or contact support if the problem continues.
+          </p>
+        </>
+      )}
 
-        {!isRecoveryInProgress && state !== "success" && (
-          <>
-            <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-              Choose a new password
-            </h2>
-            <form
-              className="mt-8 space-y-6"
-              onSubmit={(event) => {
-                event.preventDefault();
-                submit();
-              }}
-            >
-              <div>
-                <Label htmlFor="password">New password</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  disabled={state === "in-progress"}
-                  required
-                  className="mt-1"
-                />
+      {!isRecoveryInProgress && state !== "success" && (
+        <>
+          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+            Choose a new password
+          </h2>
+          <form
+            className="mt-16 space-y-6"
+            onSubmit={(event) => {
+              event.preventDefault();
+              submit();
+            }}
+          >
+            <div>
+              <Label htmlFor="password">New password</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                disabled={state === "in-progress"}
+                required
+                className="mt-1"
+              />
 
-                <Label htmlFor="repeat-password" className="mt-4">
-                  Repeat password
-                </Label>
-                <Input
-                  id="repeat-password"
-                  name="repeat-password"
-                  type="password"
-                  value={repeatPassword}
-                  onChange={(event) => setRepeatPassword(event.target.value)}
-                  disabled={state === "in-progress"}
-                  required
-                  className="mt-1"
-                />
+              <Label htmlFor="repeat-password" className="mt-4">
+                Repeat password
+              </Label>
+              <Input
+                id="repeat-password"
+                name="repeat-password"
+                type="password"
+                value={repeatPassword}
+                onChange={(event) => setRepeatPassword(event.target.value)}
+                disabled={state === "in-progress"}
+                required
+                className="mt-1"
+              />
 
-                {state === "error" && (
-                  <div className="mt-2 text-sm text-red-600">
-                    Something went wrong.
-                  </div>
-                )}
-              </div>
+              {state === "error" && (
+                <div className="mt-2 text-sm text-red-600">
+                  Something went wrong.
+                </div>
+              )}
+            </div>
 
-              <div>
-                <Button
-                  type="submit"
-                  disabled={state === "in-progress"}
-                  icon={
-                    state === "in-progress" ? (
-                      <Spinner className="text-white" />
-                    ) : undefined
-                  }
-                >
-                  {(state === "initial" || state === "error") &&
-                    "Change password"}
-                  {state === "in-progress" && "Changing password"}
-                </Button>
-              </div>
-            </form>
-          </>
-        )}
+            <div>
+              <Button
+                type="submit"
+                disabled={state === "in-progress"}
+                icon={
+                  state === "in-progress" ? (
+                    <Spinner className="text-white" />
+                  ) : undefined
+                }
+              >
+                {(state === "initial" || state === "error") &&
+                  "Change password"}
+                {state === "in-progress" && "Changing password"}
+              </Button>
+            </div>
+          </form>
+        </>
+      )}
 
-        {state === "success" && (
-          <>
-            <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-              Password changed
-            </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
-              You can now <Link to="/">continue to the application</Link>.
-            </p>
-          </>
-        )}
-      </Card>
+      {state === "success" && (
+        <>
+          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+            Password changed
+          </h2>
+          <p className="mt-10 text-center text-sm text-gray-600">
+            You can now <Link to="/">continue to the application</Link>.
+          </p>
+        </>
+      )}
     </PageContainer>
   );
 }

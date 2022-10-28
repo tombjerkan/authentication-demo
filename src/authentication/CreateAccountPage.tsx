@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { confirmAccount, signup } from "./identity";
 import {
   Button,
-  Card,
-  CompanyLogo,
   Input,
   Label,
   Link,
@@ -71,9 +69,8 @@ function CreateAccountFormPage(props: {
 
   return (
     <PageContainer>
-      <Card className="w-full max-w-lg space-y-8">
+      <div className="space-y-8">
         <div>
-          <CompanyLogo className="mx-auto h-12 w-auto" />
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
             Create an account
           </h2>
@@ -151,7 +148,7 @@ function CreateAccountFormPage(props: {
             </Button>
           </div>
         </form>
-      </Card>
+      </div>
     </PageContainer>
   );
 }
@@ -159,9 +156,8 @@ function CreateAccountFormPage(props: {
 function ConfirmationEmailSentPage(props: { email: string }) {
   return (
     <PageContainer>
-      <Card className="w-full max-w-md space-y-8">
+      <div className="space-y-8">
         <div>
-          <CompanyLogo className="mx-auto h-12 w-auto" />
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
             Create an account
           </h2>
@@ -170,7 +166,7 @@ function ConfirmationEmailSentPage(props: { email: string }) {
         <p className="mt-2">
           A link to confirm your new account has been sent to {props.email}.
         </p>
-      </Card>
+      </div>
     </PageContainer>
   );
 }
@@ -188,41 +184,37 @@ function ConfirmAccountPage(props: { confirmationToken: string }) {
 
   return (
     <PageContainer>
-      <Card className="max-h-md w-full max-w-lg space-y-8 py-8">
-        {state === "in-progress" && (
-          <div className="flex justify-center text-indigo-600">
-            <Spinner />
-          </div>
-        )}
+      {state === "in-progress" && (
+        <div className="flex justify-center text-indigo-600">
+          <Spinner />
+        </div>
+      )}
 
-        {state !== "in-progress" && (
-          <div>
-            <CompanyLogo className="mx-auto h-12 w-auto" />
+      {state !== "in-progress" && (
+        <div>
+          {state === "success" && (
+            <>
+              <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+                Account confirmed
+              </h2>
+              <p className="mt-2 text-center text-sm text-gray-600">
+                You can now <Link to="/login">sign in to your account</Link>.
+              </p>
+            </>
+          )}
 
-            {state === "success" && (
-              <>
-                <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-                  Account confirmed
-                </h2>
-                <p className="mt-2 text-center text-sm text-gray-600">
-                  You can now <Link to="/login">sign in to your account</Link>.
-                </p>
-              </>
-            )}
-
-            {state === "error" && (
-              <>
-                <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-                  Something went wrong
-                </h2>
-                <p className="mt-2 text-center text-sm text-gray-600">
-                  Please try again or contact support if the problem continues.
-                </p>
-              </>
-            )}
-          </div>
-        )}
-      </Card>
+          {state === "error" && (
+            <>
+              <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+                Something went wrong
+              </h2>
+              <p className="mt-2 text-center text-sm text-gray-600">
+                Please try again or contact support if the problem continues.
+              </p>
+            </>
+          )}
+        </div>
+      )}
     </PageContainer>
   );
 }

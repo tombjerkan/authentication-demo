@@ -6,22 +6,13 @@ import { Link as ReactRouterLink, LinkProps } from "react-router-dom";
 export const PageContainer = (props: { children: ReactNode }) => (
   <div
     className={clsx(
-      "flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8",
+      "flex min-h-full items-center justify-center",
       styles.backgroundPattern
     )}
   >
-    {props.children}
-  </div>
-);
-
-export const Card = (props: { className?: string; children: ReactNode }) => (
-  <div
-    className={clsx(
-      "overflow-hidden bg-white shadow sm:rounded-lg",
-      props.className
-    )}
-  >
-    <div className="px-4 py-5 sm:p-6">{props.children}</div>
+    <div className="mx-auto my-12 w-full overflow-hidden bg-white px-4 pt-12 pb-5 shadow sm:mx-4 sm:max-w-lg sm:rounded-lg">
+      {props.children}
+    </div>
   </div>
 );
 
@@ -70,14 +61,6 @@ export const Spinner = (
       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
     ></path>
   </svg>
-);
-
-export const CompanyLogo = (props: { className?: string }) => (
-  <img
-    className={props.className}
-    src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-    alt="Your Company"
-  />
 );
 
 export const Button = (
