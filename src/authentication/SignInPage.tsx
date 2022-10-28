@@ -5,8 +5,10 @@ import {
   Input,
   Label,
   Link,
+  MainHeader,
   PageContainer,
   Spinner,
+  SubHeader,
 } from "../common/components";
 
 export default function SignInPage() {
@@ -22,12 +24,10 @@ export default function SignInPage() {
   return (
     <PageContainer>
       <div>
-        <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
-          Sign in
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <MainHeader>Sign in</MainHeader>
+        <SubHeader className="mt-2">
           Or <Link to="/register">create an account</Link>
-        </p>
+        </SubHeader>
       </div>
       <form
         className="mt-8 space-y-6"

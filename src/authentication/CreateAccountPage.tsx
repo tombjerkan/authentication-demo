@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { confirmAccount, signup } from "./identity";
 import {
+  BodyText,
   Button,
   Input,
   Label,
   Link,
+  MainHeader,
   PageContainer,
   Spinner,
+  SubHeader,
 } from "../common/components";
 import { useLocation } from "react-router-dom";
 
@@ -71,12 +74,10 @@ function CreateAccountFormPage(props: {
     <PageContainer>
       <div className="space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Create an account
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <MainHeader>Create an account</MainHeader>
+          <SubHeader className="mt-2">
             Or <Link to="/login">sign in to an existing account</Link>
-          </p>
+          </SubHeader>
         </div>
 
         <form
@@ -156,17 +157,10 @@ function CreateAccountFormPage(props: {
 function ConfirmationEmailSentPage(props: { email: string }) {
   return (
     <PageContainer>
-      <div className="space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Create an account
-          </h2>
-        </div>
-
-        <p className="mt-2">
-          A link to confirm your new account has been sent to {props.email}.
-        </p>
-      </div>
+      <MainHeader>Create an account</MainHeader>
+      <BodyText>
+        A link to confirm your new account has been sent to {props.email}.
+      </BodyText>
     </PageContainer>
   );
 }
@@ -194,23 +188,19 @@ function ConfirmAccountPage(props: { confirmationToken: string }) {
         <div>
           {state === "success" && (
             <>
-              <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-                Account confirmed
-              </h2>
-              <p className="mt-2 text-center text-sm text-gray-600">
+              <MainHeader>Account confirmed</MainHeader>
+              <SubHeader>
                 You can now <Link to="/login">sign in to your account</Link>.
-              </p>
+              </SubHeader>
             </>
           )}
 
           {state === "error" && (
             <>
-              <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-                Something went wrong
-              </h2>
-              <p className="mt-2 text-center text-sm text-gray-600">
+              <MainHeader>Something went wrong</MainHeader>
+              <SubHeader className="mt-2">
                 Please try again or contact support if the problem continues.
-              </p>
+              </SubHeader>
             </>
           )}
         </div>

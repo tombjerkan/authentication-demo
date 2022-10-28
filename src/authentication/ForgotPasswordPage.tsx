@@ -6,12 +6,15 @@ import {
   useRecover,
 } from "../authentication/identity";
 import {
+  BodyText,
   Button,
   Input,
   Label,
   Link,
+  MainHeader,
   PageContainer,
   Spinner,
+  SubHeader,
 } from "../common/components";
 
 type State = "initial" | "in-progress" | "success" | "error";
@@ -46,18 +49,16 @@ function RequestPasswordRecoveryPage() {
     <PageContainer>
       <div className="space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Forgot your password?
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <MainHeader>Forgot your password?</MainHeader>
+          <SubHeader className="mt-2">
             Or <Link to="/login">go back to sign-in page</Link>
-          </p>
+          </SubHeader>
         </div>
 
-        <p>
+        <BodyText>
           Enter the email address for your account, and we'll email you a link
           to reset your password.
-        </p>
+        </BodyText>
 
         <form
           className="mt-8"
@@ -82,9 +83,9 @@ function RequestPasswordRecoveryPage() {
             />
           </div>
           {state === "error" && (
-            <p className="mt-2 text-sm text-red-600">
+            <BodyText className="mt-2 text-red-600">
               No account exists for the given email address.
-            </p>
+            </BodyText>
           )}
           <Button
             type="submit"
@@ -111,17 +112,15 @@ function ResetEmailSentPage(props: { email: string }) {
     <PageContainer>
       <div className="space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Forgot your password?
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <MainHeader>Forgot your password?</MainHeader>
+          <SubHeader className="mt-2">
             Or <Link to="/login">go back to sign-in page</Link>
-          </p>
+          </SubHeader>
         </div>
 
-        <p className="mt-2">
+        <BodyText className="mt-2">
           A link to reset your password has been sent to {props.email}.
-        </p>
+        </BodyText>
       </div>
     </PageContainer>
   );
@@ -161,20 +160,16 @@ function ChangePasswordPage(props: { recoveryToken: string }) {
 
       {isRecoveryError && (
         <>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Something went wrong
-          </h2>
-          <p className="mt-10 text-center text-sm text-gray-600">
+          <MainHeader>Something went wrong</MainHeader>
+          <SubHeader className="mt-10">
             Please try again or contact support if the problem continues.
-          </p>
+          </SubHeader>
         </>
       )}
 
       {!isRecoveryInProgress && state !== "success" && (
         <>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Choose a new password
-          </h2>
+          <MainHeader>Choose a new password</MainHeader>
           <form
             className="mt-16 space-y-6"
             onSubmit={(event) => {
@@ -237,12 +232,10 @@ function ChangePasswordPage(props: { recoveryToken: string }) {
 
       {state === "success" && (
         <>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Password changed
-          </h2>
-          <p className="mt-10 text-center text-sm text-gray-600">
+          <MainHeader>Password changed</MainHeader>
+          <SubHeader className="mt-10">
             You can now <Link to="/">continue to the application</Link>.
-          </p>
+          </SubHeader>
         </>
       )}
     </PageContainer>

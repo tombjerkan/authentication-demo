@@ -16,6 +16,30 @@ export const PageContainer = (props: { children: ReactNode }) => (
   </div>
 );
 
+export const MainHeader = (props: { children: ReactNode }) => (
+  <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
+    {props.children}
+  </h2>
+);
+
+export const SubHeader = (props: {
+  children: ReactNode;
+  className?: string;
+}) => (
+  <p className={clsx("text-center text-sm text-gray-600", props.className)}>
+    {props.children}
+  </p>
+);
+
+export const BodyText = (props: {
+  children: ReactNode;
+  className?: string;
+}) => (
+  <p className={clsx("text-sm text-gray-500", props.className)}>
+    {props.children}
+  </p>
+);
+
 export const Label = (
   props: PropsWithoutRef<JSX.IntrinsicElements["label"]>
 ) => (
