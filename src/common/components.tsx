@@ -35,9 +35,7 @@ export const BodyText = (props: {
   children: ReactNode;
   className?: string;
 }) => (
-  <p className={clsx("text-sm text-gray-500", props.className)}>
-    {props.children}
-  </p>
+  <p className={clsx("text-gray-500", props.className)}>{props.children}</p>
 );
 
 export const Label = (
@@ -55,7 +53,7 @@ export const Input = (
   <input
     {...props}
     className={clsx(
-      "relative block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+      "relative block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500",
       props.disabled && "opacity-50",
       props.className
     )}
@@ -93,7 +91,7 @@ export const Button = (
   <button
     {...props}
     className={clsx(
-      "group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2",
+      "group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2",
       props.disabled && "opacity-50",
       props.className
     )}
