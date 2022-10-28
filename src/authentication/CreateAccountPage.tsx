@@ -12,8 +12,6 @@ import {
 } from "../common/components";
 import { useLocation } from "react-router-dom";
 
-type State = "initial" | "in-progress" | "success" | "error";
-
 export default function RegisterPage() {
   const confirmationToken = useConfirmationToken();
 
@@ -25,23 +23,51 @@ export default function RegisterPage() {
 }
 
 function CreateAccountPage() {
-  const [state, setState] = useState<State>("initial");
+  const [state, setState] = useState<
+    | { page: "create-account"; isError: boolean; isSubmitting: boolean }
+    | { page: "email-sent"; email: string }
+  >({ page: "create-account", isError: false, isSubmitting: false });
 
+  async function handleSubmit(data: {
+    fullName: string;
+    email: string;
+    password: string;
+  }) {
+    setState({ page: "create-account", isError: false, isSubmitting: true });
+
+    await signup(data.fullName, data.email, data.password)
+      .then(() => setState({ page: "email-sent", email: data.email }))
+      .catch(() =>
+        setState({ page: "create-account", isError: true, isSubmitting: false })
+      );
+  }
+
+  switch (state.page) {
+    case "create-account":
+      return (
+        <CreateAccountFormPage
+          isError={state.isError}
+          isSubmitting={state.isSubmitting}
+          onSubmit={handleSubmit}
+        />
+      );
+    case "email-sent":
+      return <ConfirmationEmailSentPage email={state.email} />;
+  }
+}
+
+function CreateAccountFormPage(props: {
+  isError: boolean;
+  isSubmitting: boolean;
+  onSubmit: (data: {
+    fullName: string;
+    email: string;
+    password: string;
+  }) => Promise<void>;
+}) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  async function submit() {
-    setState("in-progress");
-
-    await signup(fullName, email, password)
-      .then(() => setState("success"))
-      .catch(() => setState("error"));
-  }
-
-  if (state === "success") {
-    return <ConfirmationEmailSentPage email={email} />;
-  }
 
   return (
     <PageContainer>
@@ -60,7 +86,7 @@ function CreateAccountPage() {
           className="mt-8 space-y-6"
           onSubmit={(event) => {
             event.preventDefault();
-            submit();
+            props.onSubmit({ fullName, email, password });
           }}
         >
           <div className="rounded-md shadow-sm">
@@ -71,7 +97,7 @@ function CreateAccountPage() {
               value={fullName}
               onChange={(event) => setFullName(event.target.value)}
               type="text"
-              disabled={state === "in-progress"}
+              disabled={props.isSubmitting}
               required
               className="mt-1"
             />
@@ -85,7 +111,7 @@ function CreateAccountPage() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               type="email"
-              disabled={state === "in-progress"}
+              disabled={props.isSubmitting}
               required
               className="mt-1"
             />
@@ -99,12 +125,12 @@ function CreateAccountPage() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               type="password"
-              disabled={state === "in-progress"}
+              disabled={props.isSubmitting}
               required
               className="mt-1"
             />
 
-            {state === "error" && (
+            {props.isError && (
               <div className="mt-2 text-sm text-red-600">
                 Could not create an account.
               </div>
@@ -114,14 +140,14 @@ function CreateAccountPage() {
           <div>
             <Button
               type="submit"
-              disabled={state === "in-progress"}
+              disabled={props.isSubmitting}
               icon={
-                state === "in-progress" ? (
+                props.isSubmitting ? (
                   <Spinner className="text-white" />
                 ) : undefined
               }
             >
-              {state === "in-progress" ? "Creating account" : "Create account"}
+              {props.isSubmitting ? "Creating account" : "Create account"}
             </Button>
           </div>
         </form>
