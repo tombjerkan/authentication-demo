@@ -2,7 +2,7 @@ import { MemoryRouter } from "react-router-dom";
 import Link from "./Link";
 
 export default {
-  title: "Link",
+  title: "common/Link",
   component: Link,
 };
 

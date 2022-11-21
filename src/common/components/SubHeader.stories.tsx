@@ -1,7 +1,7 @@
 import SubHeader from "./SubHeader";
 
 export default {
-  title: "SubHeader",
+  title: "common/SubHeader",
   component: SubHeader,
 };
 

@@ -1,7 +1,7 @@
 import PageContainer from "./PageContainer";
 
 export default {
-  title: "PageContainer",
+  title: "common/PageContainer",
   component: PageContainer,
 };
 

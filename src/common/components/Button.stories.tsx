@@ -2,7 +2,7 @@ import Button from "./Button";
 import { ArrowPathIcon } from "@heroicons/react/24/solid";
 
 export default {
-  title: "Button",
+  title: "common/Button",
   component: Button,
 };
 
