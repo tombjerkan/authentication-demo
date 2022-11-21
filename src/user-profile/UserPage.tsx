@@ -1,8 +1,4 @@
-import {
-  useLogout,
-  useRequireAuth,
-  useUser,
-} from "../authentication/AuthProvider";
+import { useLogout, useRequireAuth, useUser } from "../authentication/identity";
 
 export default function UserPage() {
   useRequireAuth();

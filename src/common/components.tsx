@@ -1,27 +1,41 @@
 import clsx from "clsx";
 import { PropsWithoutRef, ReactNode } from "react";
 import styles from "./components.module.css";
+import { Link as ReactRouterLink, LinkProps } from "react-router-dom";
 
 export const PageContainer = (props: { children: ReactNode }) => (
   <div
     className={clsx(
-      "flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8",
+      "flex min-h-full items-center justify-center",
       styles.backgroundPattern
     )}
   >
-    {props.children}
+    <div className="mx-auto my-12 w-full overflow-hidden bg-white px-4 pt-12 pb-5 shadow sm:mx-4 sm:max-w-lg sm:rounded-lg">
+      {props.children}
+    </div>
   </div>
 );
 
-export const Card = (props: { className?: string; children: ReactNode }) => (
-  <div
-    className={clsx(
-      "overflow-hidden bg-white shadow sm:rounded-lg",
-      props.className
-    )}
-  >
-    <div className="px-4 py-5 sm:p-6">{props.children}</div>
-  </div>
+export const MainHeader = (props: { children: ReactNode }) => (
+  <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
+    {props.children}
+  </h2>
+);
+
+export const SubHeader = (props: {
+  children: ReactNode;
+  className?: string;
+}) => (
+  <p className={clsx("text-center text-sm text-gray-600", props.className)}>
+    {props.children}
+  </p>
+);
+
+export const BodyText = (props: {
+  children: ReactNode;
+  className?: string;
+}) => (
+  <p className={clsx("text-gray-500", props.className)}>{props.children}</p>
 );
 
 export const Label = (
@@ -39,7 +53,7 @@ export const Input = (
   <input
     {...props}
     className={clsx(
-      "relative block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm",
+      "relative block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500",
       props.disabled && "opacity-50",
       props.className
     )}
@@ -50,7 +64,7 @@ export const Spinner = (
   props: PropsWithoutRef<JSX.IntrinsicElements["svg"]>
 ) => (
   <svg
-    className={clsx("h-5 w-5 animate-spin text-white", props.className)}
+    className={clsx("h-5 w-5 animate-spin", props.className)}
     xmlns="http://www.w3.org/2000/svg"
     fill="none"
     viewBox="0 0 24 24"
@@ -71,21 +85,13 @@ export const Spinner = (
   </svg>
 );
 
-export const CompanyLogo = (props: { className?: string }) => (
-  <img
-    className={props.className}
-    src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-    alt="Your Company"
-  />
-);
-
 export const Button = (
   props: PropsWithoutRef<JSX.IntrinsicElements["button"]> & { icon?: ReactNode }
 ) => (
   <button
     {...props}
     className={clsx(
-      "group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2",
+      "group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2",
       props.disabled && "opacity-50",
       props.className
     )}
@@ -97,4 +103,16 @@ export const Button = (
     )}
     <span className="-ml-1 mr-3">{props.children}</span>
   </button>
+);
+
+export const Link = (
+  props: LinkProps & React.RefAttributes<HTMLAnchorElement>
+) => (
+  <ReactRouterLink
+    {...props}
+    className={clsx(
+      "font-medium text-indigo-600 hover:text-indigo-500",
+      props.className
+    )}
+  />
 );

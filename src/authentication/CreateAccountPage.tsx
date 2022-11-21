@@ -1,121 +1,216 @@
-import { useState } from "react";
-import { registerMock } from "./backendmock";
+import { useEffect, useState } from "react";
+import { confirmAccount, signup } from "./identity";
 import {
+  BodyText,
   Button,
-  Card,
-  CompanyLogo,
   Input,
   Label,
+  Link,
+  MainHeader,
   PageContainer,
   Spinner,
+  SubHeader,
 } from "../common/components";
+import { useLocation } from "react-router-dom";
 
-type State = "initial" | "in-progress" | "success" | "error";
+export default function RegisterPage() {
+  const confirmationToken = useConfirmationToken();
 
-export default function CreateAccountPage() {
-  const [state, setState] = useState<State>("initial");
+  return confirmationToken ? (
+    <ConfirmAccountPage confirmationToken={confirmationToken} />
+  ) : (
+    <CreateAccountPage />
+  );
+}
 
+function CreateAccountPage() {
+  const [state, setState] = useState<
+    | { page: "create-account"; isError: boolean; isSubmitting: boolean }
+    | { page: "email-sent"; email: string }
+  >({ page: "create-account", isError: false, isSubmitting: false });
+
+  async function handleSubmit(data: {
+    fullName: string;
+    email: string;
+    password: string;
+  }) {
+    setState({ page: "create-account", isError: false, isSubmitting: true });
+
+    await signup(data.fullName, data.email, data.password)
+      .then(() => setState({ page: "email-sent", email: data.email }))
+      .catch(() =>
+        setState({ page: "create-account", isError: true, isSubmitting: false })
+      );
+  }
+
+  switch (state.page) {
+    case "create-account":
+      return (
+        <CreateAccountFormPage
+          isError={state.isError}
+          isSubmitting={state.isSubmitting}
+          onSubmit={handleSubmit}
+        />
+      );
+    case "email-sent":
+      return <ConfirmationEmailSentPage email={state.email} />;
+  }
+}
+
+function CreateAccountFormPage(props: {
+  isError: boolean;
+  isSubmitting: boolean;
+  onSubmit: (data: {
+    fullName: string;
+    email: string;
+    password: string;
+  }) => Promise<void>;
+}) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  async function submit() {
-    setState("in-progress");
-    const isSuccess = await registerMock(fullName, email, password);
-    setState(isSuccess ? "success" : "error");
-  }
+  return (
+    <PageContainer>
+      <div className="space-y-8">
+        <div>
+          <MainHeader>Create an account</MainHeader>
+          <SubHeader className="mt-2">
+            Or <Link to="/login">sign in to an existing account</Link>
+          </SubHeader>
+        </div>
+
+        <form
+          className="mt-8 space-y-6"
+          onSubmit={(event) => {
+            event.preventDefault();
+            props.onSubmit({ fullName, email, password });
+          }}
+        >
+          <div className="rounded-md shadow-sm">
+            <Label htmlFor="full-name">Full name</Label>
+            <Input
+              id="full-name"
+              name="fullName"
+              value={fullName}
+              onChange={(event) => setFullName(event.target.value)}
+              type="text"
+              disabled={props.isSubmitting}
+              required
+              className="mt-1"
+            />
+
+            <Label htmlFor="email-address" className="mt-4">
+              Email address
+            </Label>
+            <Input
+              id="email-address"
+              name="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              type="email"
+              disabled={props.isSubmitting}
+              required
+              className="mt-1"
+            />
+
+            <Label htmlFor="password" className="mt-4">
+              Password
+            </Label>
+            <Input
+              id="password"
+              name="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              type="password"
+              disabled={props.isSubmitting}
+              required
+              className="mt-1"
+            />
+
+            {props.isError && (
+              <div className="mt-2 text-sm text-red-600">
+                Could not create an account.
+              </div>
+            )}
+          </div>
+
+          <div>
+            <Button
+              type="submit"
+              disabled={props.isSubmitting}
+              icon={
+                props.isSubmitting ? (
+                  <Spinner className="text-white" />
+                ) : undefined
+              }
+            >
+              {props.isSubmitting ? "Creating account" : "Create account"}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </PageContainer>
+  );
+}
+
+function ConfirmationEmailSentPage(props: { email: string }) {
+  return (
+    <PageContainer>
+      <MainHeader>Create an account</MainHeader>
+      <BodyText>
+        A link to confirm your new account has been sent to {props.email}.
+      </BodyText>
+    </PageContainer>
+  );
+}
+
+function ConfirmAccountPage(props: { confirmationToken: string }) {
+  const [state, setState] = useState<"in-progress" | "success" | "error">(
+    "in-progress"
+  );
+
+  useEffect(() => {
+    confirmAccount(props.confirmationToken)
+      .then(() => setState("success"))
+      .catch(() => setState("error"));
+  }, [props.confirmationToken]);
 
   return (
     <PageContainer>
-      <Card className="w-full max-w-lg space-y-8">
-        <div>
-          <CompanyLogo className="mx-auto h-12 w-auto" />
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Create an account
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Or{" "}
-            <a
-              href="/login"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              sign in to an existing account
-            </a>
-          </p>
+      {state === "in-progress" && (
+        <div className="flex justify-center text-indigo-600">
+          <Spinner />
         </div>
+      )}
 
-        {state === "success" && <p>Success</p>}
+      {state !== "in-progress" && (
+        <div>
+          {state === "success" && (
+            <>
+              <MainHeader>Account confirmed</MainHeader>
+              <SubHeader>
+                You can now <Link to="/login">sign in to your account</Link>.
+              </SubHeader>
+            </>
+          )}
 
-        {state !== "success" && (
-          <form
-            className="mt-8 space-y-6"
-            onSubmit={(event) => {
-              event.preventDefault();
-              submit();
-            }}
-          >
-            <div className="rounded-md shadow-sm">
-              <Label htmlFor="full-name">Full name</Label>
-              <Input
-                id="full-name"
-                name="fullName"
-                value={fullName}
-                onChange={(event) => setFullName(event.target.value)}
-                type="text"
-                disabled={state === "in-progress"}
-                required
-                className="mt-1"
-              />
-
-              <Label htmlFor="email-address" className="mt-4">
-                Email address
-              </Label>
-              <Input
-                id="email-address"
-                name="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                type="email"
-                disabled={state === "in-progress"}
-                required
-                className="mt-1"
-              />
-
-              <Label htmlFor="password" className="mt-4">
-                Password
-              </Label>
-              <Input
-                id="password"
-                name="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                type="password"
-                disabled={state === "in-progress"}
-                required
-                className="mt-1"
-              />
-
-              {state === "error" && (
-                <div className="mt-2 text-sm text-red-600">
-                  Could not create an account.
-                </div>
-              )}
-            </div>
-
-            <div>
-              <Button
-                type="submit"
-                disabled={state === "in-progress"}
-                icon={state === "in-progress" ? <Spinner /> : undefined}
-              >
-                {state === "in-progress"
-                  ? "Creating account"
-                  : "Create account"}
-              </Button>
-            </div>
-          </form>
-        )}
-      </Card>
+          {state === "error" && (
+            <>
+              <MainHeader>Something went wrong</MainHeader>
+              <SubHeader className="mt-2">
+                Please try again or contact support if the problem continues.
+              </SubHeader>
+            </>
+          )}
+        </div>
+      )}
     </PageContainer>
   );
+}
+
+function useConfirmationToken() {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.hash.substring(1));
+  return searchParams.get("confirmation_token");
 }
