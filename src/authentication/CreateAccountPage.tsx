@@ -46,18 +46,18 @@ function CreateAccountPage() {
   switch (state.page) {
     case "create-account":
       return (
-        <CreateAccountFormPage
+        <CreateAccountFormView
           isError={state.isError}
           isSubmitting={state.isSubmitting}
           onSubmit={handleSubmit}
         />
       );
     case "email-sent":
-      return <ConfirmationEmailSentPage email={state.email} />;
+      return <ConfirmationEmailSentView email={state.email} />;
   }
 }
 
-function CreateAccountFormPage(props: {
+export function CreateAccountFormView(props: {
   isError: boolean;
   isSubmitting: boolean;
   onSubmit: (data: {
@@ -154,7 +154,7 @@ function CreateAccountFormPage(props: {
   );
 }
 
-function ConfirmationEmailSentPage(props: { email: string }) {
+export function ConfirmationEmailSentView(props: { email: string }) {
   return (
     <PageContainer>
       <MainHeader>Create an account</MainHeader>
@@ -176,17 +176,23 @@ function ConfirmAccountPage(props: { confirmationToken: string }) {
       .catch(() => setState("error"));
   }, [props.confirmationToken]);
 
+  return <ConfirmAccountView state={state} />;
+}
+
+export function ConfirmAccountView(props: {
+  state: "in-progress" | "success" | "error";
+}) {
   return (
     <PageContainer>
-      {state === "in-progress" && (
+      {props.state === "in-progress" && (
         <div className="flex justify-center text-indigo-600">
           <Spinner />
         </div>
       )}
 
-      {state !== "in-progress" && (
+      {props.state !== "in-progress" && (
         <div>
-          {state === "success" && (
+          {props.state === "success" && (
             <>
               <MainHeader>Account confirmed</MainHeader>
               <SubHeader>
@@ -195,7 +201,7 @@ function ConfirmAccountPage(props: { confirmationToken: string }) {
             </>
           )}
 
-          {state === "error" && (
+          {props.state === "error" && (
             <>
               <MainHeader>Something went wrong</MainHeader>
               <SubHeader className="mt-2">
