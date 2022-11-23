@@ -14,12 +14,24 @@ import {
 export default function SignInPage() {
   const [login, isLoginInProgress, isLoginError] = useLogin();
 
+  return (
+    <PageView
+      onSubmit={login}
+      isLoginInProgress={isLoginInProgress}
+      isLoginError={isLoginError}
+    />
+  );
+}
+
+interface ViewProps {
+  onSubmit: (email: string, password: string) => void;
+  isLoginInProgress: boolean;
+  isLoginError: boolean;
+}
+
+export function PageView(props: ViewProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  async function submit() {
-    login(email, password);
-  }
 
   return (
     <PageContainer>
@@ -33,7 +45,7 @@ export default function SignInPage() {
         className="mt-8 space-y-6"
         onSubmit={(event) => {
           event.preventDefault();
-          submit();
+          props.onSubmit(email, password);
         }}
       >
         <div>
@@ -44,7 +56,7 @@ export default function SignInPage() {
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            disabled={isLoginInProgress}
+            disabled={props.isLoginInProgress}
             autoComplete="email"
             required
             className="mt-1"
@@ -59,13 +71,13 @@ export default function SignInPage() {
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            disabled={isLoginInProgress}
+            disabled={props.isLoginInProgress}
             autoComplete="current-password"
             required
             className="mt-1"
           />
 
-          {isLoginError && (
+          {props.isLoginError && (
             <div className="mt-2 text-sm text-red-600">
               Incorrect email and password combination.
             </div>
@@ -81,12 +93,14 @@ export default function SignInPage() {
         <div>
           <Button
             type="submit"
-            disabled={isLoginInProgress}
+            disabled={props.isLoginInProgress}
             icon={
-              isLoginInProgress ? <Spinner className="text-white" /> : undefined
+              props.isLoginInProgress ? (
+                <Spinner className="text-white" />
+              ) : undefined
             }
           >
-            {isLoginInProgress ? "Signing in" : "Sign in"}
+            {props.isLoginInProgress ? "Signing in" : "Sign in"}
           </Button>
         </div>
       </form>

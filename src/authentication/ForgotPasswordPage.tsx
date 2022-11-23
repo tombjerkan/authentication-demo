@@ -17,8 +17,6 @@ import {
   SubHeader,
 } from "../common/components";
 
-type State = "initial" | "in-progress" | "success" | "error";
-
 export default function ForgotPasswordPage() {
   const recoveryToken = useRecoveryTokenHashParam();
 
@@ -30,20 +28,33 @@ export default function ForgotPasswordPage() {
 }
 
 function RequestPasswordRecoveryPage() {
-  const [state, setState] = useState<State>("initial");
-  const [email, setEmail] = useState("");
+  const [state, setState] = useState<
+    | { state: "initial" | "error" | "in-progress" }
+    | { state: "success"; email: string }
+  >({ state: "initial" });
 
-  async function submit() {
-    setState("in-progress");
+  async function submit(email: string) {
+    setState({ state: "in-progress" });
 
     requestPasswordRecovery(email)
-      .then(() => setState("success"))
-      .catch(() => setState("error"));
+      .then(() => setState({ state: "success", email }))
+      .catch(() => setState({ state: "error" }));
   }
 
-  if (state === "success") {
-    return <ResetEmailSentPage email={email} />;
+  if (state.state !== "success") {
+    return (
+      <RequestPasswordRecoveryFormView state={state.state} onSubmit={submit} />
+    );
+  } else {
+    return <ResetEmailSentView email={state.email} />;
   }
+}
+
+export function RequestPasswordRecoveryFormView(props: {
+  state: "initial" | "in-progress" | "error";
+  onSubmit: (email: string) => Promise<void>;
+}) {
+  const [email, setEmail] = useState("");
 
   return (
     <PageContainer>
@@ -64,7 +75,7 @@ function RequestPasswordRecoveryPage() {
           className="mt-8"
           onSubmit={(event) => {
             event.preventDefault();
-            submit();
+            props.onSubmit(email);
           }}
         >
           <div className="rounded-md shadow-sm">
@@ -77,27 +88,27 @@ function RequestPasswordRecoveryPage() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               type="email"
-              disabled={state === "in-progress"}
+              disabled={props.state === "in-progress"}
               required
               className="mt-1"
             />
           </div>
-          {state === "error" && (
+          {props.state === "error" && (
             <BodyText className="mt-2 text-red-600">
               No account exists for the given email address.
             </BodyText>
           )}
           <Button
             type="submit"
-            disabled={state === "in-progress"}
+            disabled={props.state === "in-progress"}
             icon={
-              state === "in-progress" ? (
+              props.state === "in-progress" ? (
                 <Spinner className="text-white" />
               ) : undefined
             }
             className="mt-6"
           >
-            {state === "in-progress"
+            {props.state === "in-progress"
               ? "Sending reset email"
               : "Send reset email"}
           </Button>
@@ -107,7 +118,7 @@ function RequestPasswordRecoveryPage() {
   );
 }
 
-function ResetEmailSentPage(props: { email: string }) {
+export function ResetEmailSentView(props: { email: string }) {
   return (
     <PageContainer>
       <div className="space-y-8">
@@ -131,13 +142,11 @@ function ChangePasswordPage(props: { recoveryToken: string }) {
     props.recoveryToken
   );
 
-  const [password, setPassword] = useState("");
-  const [repeatPassword, setRepeatPassword] = useState("");
   const [state, setState] = useState<
     "initial" | "in-progress" | "success" | "error"
   >("initial");
 
-  function submit() {
+  function submit(password: string, repeatPassword: string) {
     if (password !== repeatPassword) {
       setState("error");
       return;
@@ -150,94 +159,116 @@ function ChangePasswordPage(props: { recoveryToken: string }) {
       .catch(() => setState("error"));
   }
 
+  if (isRecoveryInProgress) {
+    return <RecoveryInProgressView />;
+  } else if (isRecoveryError) {
+    return <RecoveryErrorView />;
+  } else if (state !== "success") {
+    return <ChangePasswordFormView state={state} onSubmit={submit} />;
+  } else {
+    return <ChangePasswordSuccessView />;
+  }
+}
+
+export function RecoveryInProgressView() {
   return (
     <PageContainer>
-      {isRecoveryInProgress && (
-        <div className="flex justify-center text-indigo-600">
-          <Spinner />
+      <div className="flex justify-center text-indigo-600">
+        <Spinner />
+      </div>
+    </PageContainer>
+  );
+}
+
+export function RecoveryErrorView() {
+  return (
+    <PageContainer>
+      <MainHeader>Something went wrong</MainHeader>
+      <SubHeader className="mt-10">
+        Please try again or contact support if the problem continues.
+      </SubHeader>
+    </PageContainer>
+  );
+}
+
+export function ChangePasswordFormView(props: {
+  state: "initial" | "in-progress" | "error";
+  onSubmit: (password: string, repeatPassword: string) => void;
+}) {
+  const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
+
+  return (
+    <PageContainer>
+      <MainHeader>Choose a new password</MainHeader>
+      <form
+        className="mt-16 space-y-6"
+        onSubmit={(event) => {
+          event.preventDefault();
+          props.onSubmit(password, repeatPassword);
+        }}
+      >
+        <div>
+          <Label htmlFor="password">New password</Label>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            disabled={props.state === "in-progress"}
+            required
+            className="mt-1"
+          />
+
+          <Label htmlFor="repeat-password" className="mt-4">
+            Repeat password
+          </Label>
+          <Input
+            id="repeat-password"
+            name="repeat-password"
+            type="password"
+            value={repeatPassword}
+            onChange={(event) => setRepeatPassword(event.target.value)}
+            disabled={props.state === "in-progress"}
+            required
+            className="mt-1"
+          />
+
+          {props.state === "error" && (
+            <div className="mt-2 text-sm text-red-600">
+              Something went wrong.
+            </div>
+          )}
         </div>
-      )}
 
-      {isRecoveryError && (
-        <>
-          <MainHeader>Something went wrong</MainHeader>
-          <SubHeader className="mt-10">
-            Please try again or contact support if the problem continues.
-          </SubHeader>
-        </>
-      )}
-
-      {!isRecoveryInProgress && state !== "success" && (
-        <>
-          <MainHeader>Choose a new password</MainHeader>
-          <form
-            className="mt-16 space-y-6"
-            onSubmit={(event) => {
-              event.preventDefault();
-              submit();
-            }}
+        <div>
+          <Button
+            type="submit"
+            disabled={props.state === "in-progress"}
+            icon={
+              props.state === "in-progress" ? (
+                <Spinner className="text-white" />
+              ) : undefined
+            }
           >
-            <div>
-              <Label htmlFor="password">New password</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                disabled={state === "in-progress"}
-                required
-                className="mt-1"
-              />
+            {(props.state === "initial" || props.state === "error") &&
+              "Change password"}
+            {props.state === "in-progress" && "Changing password"}
+          </Button>
+        </div>
+      </form>
+    </PageContainer>
+  );
+}
 
-              <Label htmlFor="repeat-password" className="mt-4">
-                Repeat password
-              </Label>
-              <Input
-                id="repeat-password"
-                name="repeat-password"
-                type="password"
-                value={repeatPassword}
-                onChange={(event) => setRepeatPassword(event.target.value)}
-                disabled={state === "in-progress"}
-                required
-                className="mt-1"
-              />
-
-              {state === "error" && (
-                <div className="mt-2 text-sm text-red-600">
-                  Something went wrong.
-                </div>
-              )}
-            </div>
-
-            <div>
-              <Button
-                type="submit"
-                disabled={state === "in-progress"}
-                icon={
-                  state === "in-progress" ? (
-                    <Spinner className="text-white" />
-                  ) : undefined
-                }
-              >
-                {(state === "initial" || state === "error") &&
-                  "Change password"}
-                {state === "in-progress" && "Changing password"}
-              </Button>
-            </div>
-          </form>
-        </>
-      )}
-
-      {state === "success" && (
-        <>
-          <MainHeader>Password changed</MainHeader>
-          <SubHeader className="mt-10">
-            You can now <Link to="/">continue to the application</Link>.
-          </SubHeader>
-        </>
-      )}
+export function ChangePasswordSuccessView() {
+  return (
+    <PageContainer>
+      <MainHeader>Password changed</MainHeader>
+      <SubHeader className="mt-10">
+        You can now <Link to="/">continue to the application</Link>.
+      </SubHeader>
     </PageContainer>
   );
 }
