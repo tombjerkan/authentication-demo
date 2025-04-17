@@ -6,6 +6,7 @@ import {
   ChangePasswordFormView,
   ChangePasswordSuccessView,
   ResetEmailSentView,
+  RecoveryInProgressView,
 } from "./ForgotPasswordPage";
 
 export default { title: "authentication/ForgotPasswordPage" };
@@ -43,7 +44,7 @@ export const ResetEmailSent = () => (
   </MemoryRouter>
 );
 
-export const RecoveryInProgress = () => <RecoveryInProgress />;
+export const RecoveryInProgress = () => <RecoveryInProgressView />;
 
 export const RecoveryError = () => <RecoveryErrorView />;
 
