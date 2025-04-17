@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { confirmAccount, signup } from "./identity";
 import {
-  BodyText,
   Button,
   Input,
   Label,
@@ -87,7 +86,7 @@ export function CreateAccountFormView(props: {
             props.onSubmit({ fullName, email, password });
           }}
         >
-          <div className="rounded-md shadow-sm">
+          <div className="rounded-md">
             <Label htmlFor="full-name">Full name</Label>
             <Input
               id="full-name"
@@ -158,9 +157,9 @@ export function ConfirmationEmailSentView(props: { email: string }) {
   return (
     <PageContainer>
       <MainHeader>Create an account</MainHeader>
-      <BodyText>
+      <SubHeader className="mt-2 mb-7">
         A link to confirm your new account has been sent to {props.email}.
-      </BodyText>
+      </SubHeader>
     </PageContainer>
   );
 }
@@ -185,7 +184,7 @@ export function ConfirmAccountView(props: {
   return (
     <PageContainer>
       {props.state === "in-progress" && (
-        <div className="flex justify-center text-indigo-600">
+        <div className="mb-7 flex justify-center text-indigo-600">
           <Spinner />
         </div>
       )}
@@ -195,7 +194,7 @@ export function ConfirmAccountView(props: {
           {props.state === "success" && (
             <>
               <MainHeader>Account confirmed</MainHeader>
-              <SubHeader>
+              <SubHeader className="mt-2 mb-7">
                 You can now <Link to="/login">sign in to your account</Link>.
               </SubHeader>
             </>
@@ -204,7 +203,7 @@ export function ConfirmAccountView(props: {
           {props.state === "error" && (
             <>
               <MainHeader>Something went wrong</MainHeader>
-              <SubHeader className="mt-2">
+              <SubHeader className="mt-2 mb-7">
                 Please try again or contact support if the problem continues.
               </SubHeader>
             </>

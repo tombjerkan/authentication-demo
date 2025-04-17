@@ -95,7 +95,9 @@ export function RequestPasswordRecoveryFormView(props: {
           </div>
           {props.state === "error" && (
             <BodyText className="mt-2 text-red-600">
-              No account exists for the given email address.
+              <span className="text-red-600">
+                No account exists for the given email address.
+              </span>
             </BodyText>
           )}
           <Button
@@ -121,7 +123,7 @@ export function RequestPasswordRecoveryFormView(props: {
 export function ResetEmailSentView(props: { email: string }) {
   return (
     <PageContainer>
-      <div className="space-y-8">
+      <div className="space-y-8 pb-7">
         <div>
           <MainHeader>Forgot your password?</MainHeader>
           <SubHeader className="mt-2">
@@ -173,7 +175,7 @@ function ChangePasswordPage(props: { recoveryToken: string }) {
 export function RecoveryInProgressView() {
   return (
     <PageContainer>
-      <div className="flex justify-center text-indigo-600">
+      <div className="mb-7 flex justify-center text-indigo-600">
         <Spinner />
       </div>
     </PageContainer>
@@ -184,7 +186,7 @@ export function RecoveryErrorView() {
   return (
     <PageContainer>
       <MainHeader>Something went wrong</MainHeader>
-      <SubHeader className="mt-10">
+      <SubHeader className="mt-2 mb-7">
         Please try again or contact support if the problem continues.
       </SubHeader>
     </PageContainer>
@@ -202,7 +204,7 @@ export function ChangePasswordFormView(props: {
     <PageContainer>
       <MainHeader>Choose a new password</MainHeader>
       <form
-        className="mt-16 space-y-6"
+        className="mt-8 space-y-6"
         onSubmit={(event) => {
           event.preventDefault();
           props.onSubmit(password, repeatPassword);
@@ -266,7 +268,7 @@ export function ChangePasswordSuccessView() {
   return (
     <PageContainer>
       <MainHeader>Password changed</MainHeader>
-      <SubHeader className="mt-10">
+      <SubHeader className="mt-2 mb-7">
         You can now <Link to="/">continue to the application</Link>.
       </SubHeader>
     </PageContainer>

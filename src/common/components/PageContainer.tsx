@@ -4,6 +4,7 @@ import styles from "./PageContainer.module.css";
 
 interface Props {
   children: ReactNode;
+  className?: string;
 }
 
 const PageContainer = (props: Props) => (
@@ -13,7 +14,12 @@ const PageContainer = (props: Props) => (
       styles.backgroundPattern
     )}
   >
-    <div className="mx-auto my-12 w-full overflow-hidden bg-white px-4 pt-12 pb-5 shadow sm:mx-4 sm:max-w-lg sm:rounded-lg">
+    <div
+      className={clsx(
+        "mx-auto my-12 w-full overflow-hidden bg-white px-4 pt-12 pb-5 shadow sm:mx-4 sm:max-w-lg sm:rounded-lg",
+        props.className
+      )}
+    >
       {props.children}
     </div>
   </div>
